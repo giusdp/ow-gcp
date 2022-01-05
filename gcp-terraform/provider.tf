@@ -56,7 +56,7 @@ resource "google_compute_instance" "control_plane" {
     network = google_compute_network.ow_network.name
     access_config {}
   }
-  metadata = { ssh-keys = "${var.gc_user}:${file("./ow-gcp-key.pub")}" }
+  metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
 }
 
 resource "google_compute_instance" "europe_vms" {
@@ -73,7 +73,7 @@ resource "google_compute_instance" "europe_vms" {
     network = google_compute_network.ow_network.name
     access_config {}
   }
-  metadata = { ssh-keys = "${var.gc_user}:${file("./ow-gcp-key.pub")}" }
+  metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
 }
 
 
@@ -92,7 +92,7 @@ resource "google_compute_instance" "us_east_vms" {
     network = google_compute_network.ow_network.name
     access_config {}
   }
-  metadata = { ssh-keys = "${var.gc_user}:${file("./ow-gcp-key.pub")}" }
+  metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
 }
 
 ############ Toronto VMs
@@ -110,7 +110,7 @@ resource "google_compute_instance" "toronto_vms" {
     network = google_compute_network.ow_network.name
     access_config {}
   }
-  metadata = { ssh-keys = "${var.gc_user}:${file("./ow-gcp-key.pub")}" }
+  metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
 }
 
 output "ip_vm" {
