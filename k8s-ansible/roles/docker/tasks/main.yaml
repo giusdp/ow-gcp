@@ -1,0 +1,22 @@
+---
+- name: create Docker config directory
+  file: path=/etc/docker state=directory
+
+- name: changing Docker to systemd driver
+  copy:
+    dest: "/etc/docker/daemon.json"
+    content: '
+    {
+    "exec-opts": ["native.cgroupdriver=systemd"]
+    }'
+
+- name: install Docker
+  apt:
+    name: docker.io
+    state: present
+    update_cache: true
+
+- name: install APT Transport HTTPS
+  apt:
+    name: apt-transport-https
+    state: present

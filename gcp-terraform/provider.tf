@@ -113,6 +113,19 @@ resource "google_compute_instance" "toronto_vms" {
   metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
 }
 
-output "ip_vm" {
-  value = google_compute_instance.control_plane.network_interface.0.network_ip
+resource "local_file" "hosts" {
+  content = templatefile("hosts.tmpl",
+    {
+      control_ip = google_compute_instance.control_plane.network_interface.0.access_config.0.nat_ip
+      worker1_ip = google_compute_instance.europe_vms["controller1"].network_interface.0.access_config.0.nat_ip
+      worker2_ip = google_compute_instance.europe_vms["worker1"].network_interface.0.access_config.0.nat_ip
+      worker3_ip = google_compute_instance.europe_vms["worker2"].network_interface.0.access_config.0.nat_ip
+      worker4_ip = google_compute_instance.us_east_vms["controller2"].network_interface.0.access_config.0.nat_ip
+      worker5_ip = google_compute_instance.us_east_vms["worker3"].network_interface.0.access_config.0.nat_ip
+      worker6_ip = google_compute_instance.toronto_vms["controller3"].network_interface.0.access_config.0.nat_ip
+      worker7_ip = google_compute_instance.toronto_vms["worker4"].network_interface.0.access_config.0.nat_ip
+      user = var.gc_user
+    }
+  )
+  filename = "../k8s-ansible/hosts.ini"
 }

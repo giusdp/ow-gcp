@@ -1,0 +1,8 @@
+# Ansible
+
+# Additional feature to install
+features:
+  healthcheck: false
+
+# temporary directory used by additional features
+tmp_dir: /tmp/kubeadm-ansible-files

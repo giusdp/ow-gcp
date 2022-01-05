@@ -1,0 +1,36 @@
+---
+
+# - hosts: kube-cluster
+#   gather_facts: yes
+#   become: yes
+#   roles:
+#     - { role: setup, tags: setup }
+    
+- hosts: kube-cluster
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: docker, tags: docker }
+
+- hosts: control_plane
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: kubernetes/control, tags: control }
+
+- hosts: workers
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: kubernetes/worker, tags: worker }
+
+- hosts: control_plane
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: "Healthcheck role"
+      include_role:
+        name: healthcheck
+      when: "features.healthcheck"
+      run_once: yes
+      tags: healthcheck
