@@ -1,3 +1,1 @@
-# Dependencies
-
-- `pip install openshift kubernetes`
+# ow-gcp
