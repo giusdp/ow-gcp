@@ -12,8 +12,7 @@
     creates: cluster_initialized.txt
 
 - name: create .kube directory
-  become: yes
-  # become_user: ubuntu
+  become_user: "{{ ansible_user }}"
   file:
     path: $HOME/.kube
     state: directory
@@ -22,13 +21,12 @@
 - name: copy admin.conf to user's kube config
   copy:
     src: /etc/kubernetes/admin.conf
-    dest: ~/.kube/config
+    dest: "/home/{{ ansible_user }}/.kube/config"
     remote_src: yes
-    # owner: ubuntu
+    owner: "{{ ansible_user }}"
 
 - name: install Pod network
-  become: yes
-  # become_user: ubuntu
+  become_user: "{{ ansible_user }}"
   shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.txt
   args:
     chdir: $HOME

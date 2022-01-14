@@ -42,6 +42,17 @@ resource "google_compute_firewall" "ssh-rule" {
   source_ranges = ["0.0.0.0/0"]
 }
 
+resource "google_compute_firewall" "private-ports" {
+  name    = "private-all-enabled"
+  network = google_compute_network.ow_network.name
+  allow {
+    protocol = "all"
+    # ports    = ["6443"]
+  }
+  source_tags = ["private"]
+  # source_tags = ["k8s-control-plane", "controller1", "controller2", "controller3", "worker1", "worker2", "worker3", "worker4"]
+  # source_ranges = [""]
+}
 
 ########### Belgium VMs (with k8s control_plane)
 resource "google_compute_instance" "control_plane" {
@@ -57,6 +68,7 @@ resource "google_compute_instance" "control_plane" {
     access_config {}
   }
   metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
+  tags = ["private"]
 }
 
 resource "google_compute_instance" "europe_vms" {
@@ -74,6 +86,7 @@ resource "google_compute_instance" "europe_vms" {
     access_config {}
   }
   metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
+  tags = ["private"]
 }
 
 
@@ -93,6 +106,7 @@ resource "google_compute_instance" "us_east_vms" {
     access_config {}
   }
   metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
+  tags = ["private"]
 }
 
 ############ Toronto VMs
@@ -111,6 +125,7 @@ resource "google_compute_instance" "toronto_vms" {
     access_config {}
   }
   metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
+  tags = ["private"]
 }
 
 resource "local_file" "hosts" {
@@ -124,7 +139,7 @@ resource "local_file" "hosts" {
       worker5_ip = google_compute_instance.us_east_vms["worker3"].network_interface.0.access_config.0.nat_ip
       worker6_ip = google_compute_instance.toronto_vms["controller3"].network_interface.0.access_config.0.nat_ip
       worker7_ip = google_compute_instance.toronto_vms["worker4"].network_interface.0.access_config.0.nat_ip
-      user = var.gc_user
+      user       = var.gc_user
     }
   )
   filename = "../k8s-ansible/hosts.ini"
