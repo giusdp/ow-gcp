@@ -1,0 +1,73 @@
+---
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: worker1
+        labels: 
+          openwhisk-role: "invoker" 
+          zone: "belgium" 
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: worker2
+        labels: 
+          openwhisk-role: "invoker" 
+          zone: "belgium" 
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: worker3
+        labels: 
+          openwhisk-role: "invoker" 
+          zone: "oregon" 
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: worker4
+        labels: 
+          openwhisk-role: "invoker" 
+          zone: "toronto" 
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: controller1
+        labels: 
+          openwhisk-role: "core" 
+          zone: "belgium" 
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: controller2
+        labels: 
+          openwhisk-role: "core" 
+          zone: "oregon" 
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: controller3
+        labels: 
+          openwhisk-role: "core" 
+          zone: "toronto" 

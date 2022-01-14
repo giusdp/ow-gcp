@@ -27,6 +27,12 @@
 - hosts: control_plane
   gather_facts: yes
   become: yes
+  roles:
+    - { role: openwhisk, tags: openwhisk }
+
+- hosts: control_plane
+  gather_facts: yes
+  become: yes
   tasks:
     - name: "Healthcheck role"
       include_role:
