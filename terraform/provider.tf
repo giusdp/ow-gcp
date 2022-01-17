@@ -142,5 +142,5 @@ resource "local_file" "hosts" {
       user       = var.gc_user
     }
   )
-  filename = "../k8s-ansible/hosts.ini"
+  filename = "../ansible/hosts.ini"
 }
