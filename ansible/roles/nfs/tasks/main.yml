@@ -38,3 +38,19 @@
       nfs:
         server: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
         path: /var/nfs/kubedata
+
+- name: Add default storage class for NFS provisioner
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: storage.k8s.io/v1 
+      kind: StorageClass 
+      metadata: 
+	      name: openwhisk-nfs 
+	      annotations: 
+		      storageclass.kubernetes.io/is-default-class: "true" 
+	      provisioner: cluster.local/nfs-subdir-external-provisioner 
+	      allowVolumeExpansion: true 
+	      parameters: 
+		      archiveOnDelete: "false"
