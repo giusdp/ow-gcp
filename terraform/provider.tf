@@ -144,3 +144,12 @@ resource "local_file" "hosts" {
   )
   filename = "../ansible/hosts.ini"
 }
+
+resource "local_file" "mycluster" {
+  content = templatefile("mycluster.tmpl",
+    {
+      control_ip = google_compute_instance.control_plane.network_interface.0.access_config.0.nat_ip
+    }
+  )
+  filename = "../ansible/mycluster.yaml"
+}

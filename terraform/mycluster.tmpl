@@ -1,0 +1,16 @@
+controller:
+  replicaCount: 3
+
+whisk:
+  ingress:
+    apiHostName: ${control_ip}
+    apiHostPort: 31001
+  loadbalancer:
+    invoker_distribution: "default"
+
+nginx:
+  httpNodePort: 31001
+
+invoker:
+  containerFactory:
+    impl: "docker"
