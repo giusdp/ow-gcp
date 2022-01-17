@@ -28,6 +28,12 @@
   gather_facts: yes
   become: yes
   roles:
+    - { role: nfs }
+
+- hosts: control_plane
+  gather_facts: yes
+  become: yes
+  roles:
     - { role: openwhisk, tags: openwhisk }
 
 - hosts: control_plane

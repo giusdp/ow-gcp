@@ -20,3 +20,8 @@
   apt:
     name: kubeadm=1.22.4-00
     state: present
+
+- name: install nfs-common
+  apt:
+    name: nfs-common
+    state: present

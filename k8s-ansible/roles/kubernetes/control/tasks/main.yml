@@ -16,7 +16,7 @@
   file:
     path: $HOME/.kube
     state: directory
-    mode: 0755
+    mode: 0700
 
 - name: copy admin.conf to user's kube config
   copy:
@@ -24,6 +24,8 @@
     dest: "/home/{{ ansible_user }}/.kube/config"
     remote_src: yes
     owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0700
 
 - name: install Pod network
   become_user: "{{ ansible_user }}"
