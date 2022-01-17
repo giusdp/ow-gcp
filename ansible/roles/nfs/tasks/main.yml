@@ -47,10 +47,10 @@
       apiVersion: storage.k8s.io/v1 
       kind: StorageClass 
       metadata: 
-	      name: openwhisk-nfs 
-	      annotations: 
-		      storageclass.kubernetes.io/is-default-class: "true" 
-	      provisioner: cluster.local/nfs-subdir-external-provisioner 
-	      allowVolumeExpansion: true 
-	      parameters: 
-		      archiveOnDelete: "false"
+        name: openwhisk-nfs 
+        annotations: 
+          storageclass.kubernetes.io/is-default-class: "true" 
+      provisioner: cluster.local/nfs-subdir-external-provisioner 
+      allowVolumeExpansion: true 
+      parameters: 
+        archiveOnDelete: "false"

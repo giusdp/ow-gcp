@@ -29,6 +29,7 @@ override.tf.json
 # example: *tfplan*
 .terraform.lock.hcl
 
+hosts.ini
 credentials.json
 terraform.tfvars
 ow-gcp-key*
