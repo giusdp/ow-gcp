@@ -25,4 +25,4 @@
     release_namespace: openwhisk
     create_namespace: yes
     values_files:
-      - ~/openwhisk-deploy-kube/mycluster.yaml
+      - "/home/{{ ansible_user }}/openwhisk-deploy-kube/mycluster.yaml"

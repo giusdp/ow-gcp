@@ -9,14 +9,19 @@
   file: 
     path: /var/nfs/kubedata
     owner: nobody
+    group: nogroup
     state: directory
 
 - name: Configure nfs server
   copy:
     dest: /etc/exports
     content: |
-      /var/nfs/kubedata *(rw,no_root_squash)
+      /var/nfs/kubedata *(rw,sync,no_subtree_check,no_root_squash,no_all_squash)
       
+- name: Configure nfs server
+  ansible.builtin.shell:
+    cmd: exportfs -ra
+
 - name: Starting nfs server
   service:
     name: nfs-server 
@@ -50,7 +55,7 @@
         name: openwhisk-nfs 
         annotations: 
           storageclass.kubernetes.io/is-default-class: "true" 
-      provisioner: cluster.local/nfs-subdir-external-provisioner 
+      provisioner: k8s-sigs.io/nfs-subdir-external-provisioner 
       allowVolumeExpansion: true 
       parameters: 
         archiveOnDelete: "false"
