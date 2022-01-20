@@ -1,5 +1,10 @@
 ---
 
+- name: Install nfs-server
+  apt:
+    name: nfs-kernel-server
+    state: present
+
 - name: Install Kubernetes packages
   include_tasks: pkg.yml
 
