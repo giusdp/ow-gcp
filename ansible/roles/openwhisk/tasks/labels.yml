@@ -8,9 +8,12 @@
       kind: Node
       metadata:
         name: worker1
-        labels: 
-          openwhisk-role: "invoker" 
-          zone: "belgium" 
+        labels:
+          openwhisk-role: "invoker"
+          zone: "belgium"
+
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
   k8s:
     state: present
     definition:
@@ -18,9 +21,12 @@
       kind: Node
       metadata:
         name: worker2
-        labels: 
-          openwhisk-role: "invoker" 
-          zone: "belgium" 
+        labels:
+          openwhisk-role: "invoker"
+          zone: "belgium"
+
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
   k8s:
     state: present
     definition:
@@ -28,9 +34,12 @@
       kind: Node
       metadata:
         name: worker3
-        labels: 
-          openwhisk-role: "invoker" 
-          zone: "oregon" 
+        labels:
+          openwhisk-role: "invoker"
+          zone: "oregon"
+
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
   k8s:
     state: present
     definition:
@@ -38,9 +47,12 @@
       kind: Node
       metadata:
         name: worker4
-        labels: 
-          openwhisk-role: "invoker" 
-          zone: "toronto" 
+        labels:
+          openwhisk-role: "invoker"
+          zone: "toronto"
+
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
   k8s:
     state: present
     definition:
@@ -48,9 +60,12 @@
       kind: Node
       metadata:
         name: controller1
-        labels: 
-          openwhisk-role: "core" 
-          zone: "belgium" 
+        labels:
+          openwhisk-role: "core"
+          zone: "belgium"
+
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
   k8s:
     state: present
     definition:
@@ -58,9 +73,12 @@
       kind: Node
       metadata:
         name: controller2
-        labels: 
-          openwhisk-role: "core" 
-          zone: "oregon" 
+        labels:
+          openwhisk-role: "core"
+          zone: "oregon"
+
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
   k8s:
     state: present
     definition:
@@ -68,6 +86,6 @@
       kind: Node
       metadata:
         name: controller3
-        labels: 
-          openwhisk-role: "core" 
-          zone: "toronto" 
+        labels:
+          openwhisk-role: "core"
+          zone: "toronto"
