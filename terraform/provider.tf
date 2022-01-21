@@ -60,6 +60,7 @@ resource "google_compute_instance" "control_plane" {
   machine_type = "e2-medium"
   boot_disk {
     initialize_params {
+      size = 20
       image = "ubuntu-os-cloud/ubuntu-2004-lts"
     }
   }
@@ -78,6 +79,7 @@ resource "google_compute_instance" "europe_vms" {
   machine_type = "e2-small"
   boot_disk {
     initialize_params {
+      size = 20
       image = "ubuntu-os-cloud/ubuntu-2004-lts"
     }
   }
@@ -98,6 +100,7 @@ resource "google_compute_instance" "us_east_vms" {
   machine_type = "e2-small"
   boot_disk {
     initialize_params {
+      size = 20
       image = "ubuntu-os-cloud/ubuntu-2004-lts"
     }
   }
@@ -117,6 +120,7 @@ resource "google_compute_instance" "toronto_vms" {
   machine_type = "e2-small"
   boot_disk {
     initialize_params {
+      size = 20
       image = "ubuntu-os-cloud/ubuntu-2004-lts"
     }
   }
