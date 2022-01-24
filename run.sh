@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd gcp-terraform
-terraform apply
-cd ../k8s-ansible
-ansible-playbook cluster.yml
+cd terraform
+terraform apply -auto-approve
+cd ../ansible
+ansible-playbook cluster.yaml

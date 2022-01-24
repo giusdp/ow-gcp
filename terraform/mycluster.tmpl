@@ -1,4 +1,6 @@
 controller:
+  imageName: "mattrent/ow-controller"
+  imageTag: "latest"
   replicaCount: 3
 
 whisk:
@@ -7,10 +9,39 @@ whisk:
     apiHostPort: 31001
   loadbalancer:
     invoker_distribution: "default"
+  runtimes: "myruntimes.json"
 
 nginx:
   httpNodePort: 31001
 
 invoker:
+  imageName: "mattrent/ow-invoker"
+  imageTag: "latest"
   containerFactory:
     impl: "docker"
+
+providers:
+  alarm:
+    enabled: false
+  kafka:
+    enabled: false
+
+probes:
+  zookeeper:
+    livenessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+  kafka:
+    livenessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5

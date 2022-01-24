@@ -17,6 +17,14 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
 
+- name: Copy myruntimes.json into openwhisk-deploy-kube/
+  become_user: "{{ ansible_user }}"
+  copy:
+    src: ../../../myruntimes.json
+    dest: ~/openwhisk-deploy-kube/helm/openwhisk/
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
 - name: Install Openwhisk with helm
   become_user: "{{ ansible_user }}"
   kubernetes.core.helm:
