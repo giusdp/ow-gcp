@@ -1,4 +1,16 @@
 ---
+- name: Apply labels for openwhisk control plane
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: k8s-control-plane
+        labels:
+          zone: "belgium"
+
 - name: Apply labels for openwhisk nodes
   become_user: "{{ ansible_user }}"
   k8s:
