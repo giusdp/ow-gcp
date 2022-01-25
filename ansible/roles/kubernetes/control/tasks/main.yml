@@ -4,9 +4,10 @@
     name: kubectl=1.22.4-00 # TODO: move vrs out
     state: present
     force: yes
-    
+
 - name: initialize the cluster
-  shell: kubeadm init --pod-network-cidr=10.244.0.0/16 >> cluster_initialized.txt
+  # shell: kubeadm init --pod-network-cidr=10.244.0.0/16 >> cluster_initialized.txt
+  shell: kubeadm init >> cluster_initialized.txt
   args:
     chdir: $HOME
     creates: cluster_initialized.txt
@@ -29,7 +30,8 @@
 
 - name: install Pod network
   become_user: "{{ ansible_user }}"
-  shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.txt
+  # shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.txt
+  shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')" >> pod_network_setup.txt
   args:
     chdir: $HOME
     creates: pod_network_setup.txt
