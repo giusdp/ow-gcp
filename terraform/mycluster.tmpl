@@ -38,10 +38,10 @@ probes:
       timeoutSeconds: 5
   kafka:
     livenessProbe:
-      initialDelaySeconds: 10
+      initialDelaySeconds: 45
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: 15
     readinessProbe:
-      initialDelaySeconds: 10
+      initialDelaySeconds: 45
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: 15
