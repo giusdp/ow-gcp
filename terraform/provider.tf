@@ -9,15 +9,34 @@ terraform {
 
 variable "project" {}
 variable "gc_user" {}
+variable "allowed_ip" {}
 
 variable "belgium_names" {
-  default = ["controller1", "worker1", "worker2"]
+  type = map(string)
+
+  default = {
+    controller1 = "e2-medium"
+    worker1 = "n1-standard-1"
+    worker2 = "n1-standard-1"
+  }
 }
+
 variable "oregon_names" {
-  default = ["controller2", "worker3"]
+  type = map(string)
+
+  default = {
+    controller2 = "e2-medium"
+    worker3 = "n1-standard-1"
+  }
 }
+
 variable "toronto_names" {
-  default = ["controller3", "worker4"]
+  type = map(string)
+
+  default = {
+    controller3 = "e2-medium"
+    worker4 = "n1-standard-1"
+  }
 }
 
 provider "google" {
@@ -40,6 +59,16 @@ resource "google_compute_firewall" "ssh-rule" {
   }
   #   target_tags = ["k8s-control-plane", "controller1", "controller2", "controller3", "worker1", "worker2", "worker3", "worker4"]
   source_ranges = ["0.0.0.0/0"]
+}
+
+resource "google_compute_firewall" "ow-invoke-rule" {
+  name    = "ow-invoke-enabled"
+  network = google_compute_network.ow_network.name
+  allow {
+    protocol = "tcp"
+    ports    = ["31001"]
+  }
+  source_ranges = ["${var.allowed_ip}"]
 }
 
 resource "google_compute_firewall" "private-ports" {
@@ -73,10 +102,10 @@ resource "google_compute_instance" "control_plane" {
 }
 
 resource "google_compute_instance" "europe_vms" {
-  for_each     = toset(var.belgium_names)
-  name         = each.value
+  for_each     = var.belgium_names
+  name         = each.key
   zone         = "europe-west1-b"
-  machine_type = "e2-small"
+  machine_type = each.value
   boot_disk {
     initialize_params {
       size = 20
@@ -94,10 +123,10 @@ resource "google_compute_instance" "europe_vms" {
 
 ############ Oregon VMs
 resource "google_compute_instance" "us_east_vms" {
-  for_each     = toset(var.oregon_names)
-  name         = each.value
+  for_each     = var.oregon_names
+  name         = each.key
   zone         = "us-east1-c"
-  machine_type = "e2-small"
+  machine_type = each.value
   boot_disk {
     initialize_params {
       size = 20
@@ -114,10 +143,10 @@ resource "google_compute_instance" "us_east_vms" {
 
 ############ Toronto VMs
 resource "google_compute_instance" "toronto_vms" {
-  for_each     = toset(var.toronto_names)
-  name         = each.value
+  for_each     = var.toronto_names
+  name         = each.key
   zone         = "northamerica-northeast2-a"
-  machine_type = "e2-small"
+  machine_type = each.value
   boot_disk {
     initialize_params {
       size = 20
