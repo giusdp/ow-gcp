@@ -1,0 +1,20 @@
+- hosts: control_plane
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Copy mycluster.yaml into openwhisk-deploy-kube
+      become_user: "{{ ansible_user }}"
+      copy:
+        src: mycluster.yaml
+        dest: ~/openwhisk-deploy-kube/
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+    - name: Upgrade Openwhisk with helm
+      become_user: "{{ ansible_user }}"
+      kubernetes.core.helm:
+        name: owdev
+        chart_ref: ~/openwhisk-deploy-kube/helm/openwhisk
+        release_namespace: openwhisk
+        create_namespace: yes
+        values_files:
+          - "/home/{{ ansible_user }}/openwhisk-deploy-kube/mycluster.yaml"

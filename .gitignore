@@ -30,6 +30,7 @@ override.tf.json
 .terraform.lock.hcl
 
 hosts.ini
+mycluster.yaml
 credentials.json
 terraform.tfvars
 ow-gcp-key*
