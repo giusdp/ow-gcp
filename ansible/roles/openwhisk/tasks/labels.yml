@@ -21,6 +21,7 @@
       metadata:
         name: worker1
         labels:
+          openwhisk-tapp-label: "set2"
           openwhisk-role: "invoker"
           zone: "belgium"
 
@@ -34,6 +35,7 @@
       metadata:
         name: worker2
         labels:
+          openwhisk-tapp-label: "set2"
           openwhisk-role: "invoker"
           zone: "belgium"
 
@@ -47,6 +49,7 @@
       metadata:
         name: worker3
         labels:
+          openwhisk-tapp-label: "set1"
           openwhisk-role: "invoker"
           zone: "oregon"
 
@@ -60,6 +63,7 @@
       metadata:
         name: worker4
         labels:
+          openwhisk-tapp-label: "set1"
           openwhisk-role: "invoker"
           zone: "toronto"
 
