@@ -16,8 +16,8 @@ variable "belgium_names" {
 
   default = {
     controller1 = "e2-medium"
-    worker1 = "n1-standard-1"
-    worker2 = "n1-standard-1"
+    worker1     = "n1-standard-1"
+    # worker2     = "n1-standard-1"
   }
 }
 
@@ -25,19 +25,19 @@ variable "oregon_names" {
   type = map(string)
 
   default = {
-    controller2 = "e2-medium"
-    worker3 = "n1-standard-1"
+    # controller2 = "e2-medium"
+    worker2 = "n1-standard-1"
   }
 }
 
-variable "toronto_names" {
-  type = map(string)
+# variable "toronto_names" {
+#   type = map(string)
 
-  default = {
-    controller3 = "e2-medium"
-    worker4 = "n1-standard-1"
-  }
-}
+#   default = {
+#     controller3 = "e2-medium"
+#     worker4 = "n1-standard-1"
+#   }
+# }
 
 provider "google" {
   credentials = file("credentials.json")
@@ -71,6 +71,16 @@ resource "google_compute_firewall" "ow-invoke-rule" {
   source_ranges = ["${var.allowed_ip}"]
 }
 
+resource "google_compute_firewall" "couchbase-rule" {
+  name    = "couchbase-enabled"
+  network = google_compute_network.ow_network.name
+  allow {
+    protocol = "tcp"
+    ports    = ["8091", "8093"]
+  }
+  source_ranges = ["${var.allowed_ip}"]
+}
+
 resource "google_compute_firewall" "private-ports" {
   name    = "private-all-enabled"
   network = google_compute_network.ow_network.name
@@ -89,7 +99,7 @@ resource "google_compute_instance" "control_plane" {
   machine_type = "e2-medium"
   boot_disk {
     initialize_params {
-      size = 20
+      size  = 20
       image = "ubuntu-os-cloud/ubuntu-2004-lts"
     }
   }
@@ -98,7 +108,7 @@ resource "google_compute_instance" "control_plane" {
     access_config {}
   }
   metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
-  tags = ["private"]
+  tags     = ["private"]
 }
 
 resource "google_compute_instance" "europe_vms" {
@@ -108,7 +118,7 @@ resource "google_compute_instance" "europe_vms" {
   machine_type = each.value
   boot_disk {
     initialize_params {
-      size = 20
+      size  = 20
       image = "ubuntu-os-cloud/ubuntu-2004-lts"
     }
   }
@@ -117,11 +127,11 @@ resource "google_compute_instance" "europe_vms" {
     access_config {}
   }
   metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
-  tags = ["private"]
+  tags     = ["private"]
 }
 
 
-############ Oregon VMs
+# ############ Oregon VMs
 resource "google_compute_instance" "us_east_vms" {
   for_each     = var.oregon_names
   name         = each.key
@@ -129,7 +139,7 @@ resource "google_compute_instance" "us_east_vms" {
   machine_type = each.value
   boot_disk {
     initialize_params {
-      size = 20
+      size  = 20
       image = "ubuntu-os-cloud/ubuntu-2004-lts"
     }
   }
@@ -138,41 +148,43 @@ resource "google_compute_instance" "us_east_vms" {
     access_config {}
   }
   metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
-  tags = ["private"]
+  tags     = ["private"]
 }
 
-############ Toronto VMs
-resource "google_compute_instance" "toronto_vms" {
-  for_each     = var.toronto_names
-  name         = each.key
-  zone         = "northamerica-northeast2-a"
-  machine_type = each.value
-  boot_disk {
-    initialize_params {
-      size = 20
-      image = "ubuntu-os-cloud/ubuntu-2004-lts"
-    }
-  }
-  network_interface {
-    network = google_compute_network.ow_network.name
-    access_config {}
-  }
-  metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
-  tags = ["private"]
-}
+# ############ Toronto VMs
+# resource "google_compute_instance" "toronto_vms" {
+#   for_each     = var.toronto_names
+#   name         = each.key
+#   zone         = "northamerica-northeast2-a"
+#   machine_type = each.value
+#   boot_disk {
+#     initialize_params {
+#       size = 20
+#       image = "ubuntu-os-cloud/ubuntu-2004-lts"
+#     }
+#   }
+#   network_interface {
+#     network = google_compute_network.ow_network.name
+#     access_config {}
+#   }
+#   metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
+#   tags = ["private"]
+# }
 
 resource "local_file" "hosts" {
   content = templatefile("hosts.tmpl",
     {
-      control_ip = google_compute_instance.control_plane.network_interface.0.access_config.0.nat_ip
-      worker1_ip = google_compute_instance.europe_vms["controller1"].network_interface.0.access_config.0.nat_ip
-      worker2_ip = google_compute_instance.europe_vms["worker1"].network_interface.0.access_config.0.nat_ip
-      worker3_ip = google_compute_instance.europe_vms["worker2"].network_interface.0.access_config.0.nat_ip
-      worker4_ip = google_compute_instance.us_east_vms["controller2"].network_interface.0.access_config.0.nat_ip
-      worker5_ip = google_compute_instance.us_east_vms["worker3"].network_interface.0.access_config.0.nat_ip
-      worker6_ip = google_compute_instance.toronto_vms["controller3"].network_interface.0.access_config.0.nat_ip
-      worker7_ip = google_compute_instance.toronto_vms["worker4"].network_interface.0.access_config.0.nat_ip
-      user       = var.gc_user
+      control_ip    = google_compute_instance.control_plane.network_interface.0.access_config.0.nat_ip
+      worker1_ip    = google_compute_instance.europe_vms["controller1"].network_interface.0.access_config.0.nat_ip
+      worker2_ip    = google_compute_instance.europe_vms["worker1"].network_interface.0.access_config.0.nat_ip
+      worker3_ip    = google_compute_instance.us_east_vms["worker2"].network_interface.0.access_config.0.nat_ip
+      private_w2_ip = google_compute_instance.europe_vms["worker1"].network_interface.0.network_ip
+      private_w3_ip = google_compute_instance.us_east_vms["worker2"].network_interface.0.network_ip
+      # worker4_ip = google_compute_instance.us_east_vms["controller2"].network_interface.0.access_config.0.nat_ip
+      # worker4_ip = google_compute_instance.us_east_vms["worker3"].network_interface.0.access_config.0.nat_ip
+      # worker6_ip = google_compute_instance.toronto_vms["controller3"].network_interface.0.access_config.0.nat_ip
+      # worker7_ip = google_compute_instance.toronto_vms["worker4"].network_interface.0.access_config.0.nat_ip
+      user = var.gc_user
     }
   )
   filename = "../ansible/hosts.ini"

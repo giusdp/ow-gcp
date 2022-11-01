@@ -21,51 +21,8 @@
       metadata:
         name: worker1
         labels:
-          openwhisk-tapp-label: "set2"
           openwhisk-role: "invoker"
           zone: "belgium"
-
-- name: Apply labels for openwhisk nodes
-  become_user: "{{ ansible_user }}"
-  k8s:
-    state: present
-    definition:
-      apiVersion: v1
-      kind: Node
-      metadata:
-        name: worker2
-        labels:
-          openwhisk-tapp-label: "set2"
-          openwhisk-role: "invoker"
-          zone: "belgium"
-
-- name: Apply labels for openwhisk nodes
-  become_user: "{{ ansible_user }}"
-  k8s:
-    state: present
-    definition:
-      apiVersion: v1
-      kind: Node
-      metadata:
-        name: worker3
-        labels:
-          openwhisk-tapp-label: "set1"
-          openwhisk-role: "invoker"
-          zone: "oregon"
-
-- name: Apply labels for openwhisk nodes
-  become_user: "{{ ansible_user }}"
-  k8s:
-    state: present
-    definition:
-      apiVersion: v1
-      kind: Node
-      metadata:
-        name: worker4
-        labels:
-          openwhisk-tapp-label: "set1"
-          openwhisk-role: "invoker"
-          zone: "toronto"
 
 - name: Apply labels for openwhisk nodes
   become_user: "{{ ansible_user }}"
@@ -88,20 +45,7 @@
       apiVersion: v1
       kind: Node
       metadata:
-        name: controller2
+        name: worker2
         labels:
-          openwhisk-role: "core"
+          openwhisk-role: "invoker"
           zone: "oregon"
-
-- name: Apply labels for openwhisk nodes
-  become_user: "{{ ansible_user }}"
-  k8s:
-    state: present
-    definition:
-      apiVersion: v1
-      kind: Node
-      metadata:
-        name: controller3
-        labels:
-          openwhisk-role: "core"
-          zone: "toronto"

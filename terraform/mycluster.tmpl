@@ -1,22 +1,19 @@
 controller:
-  imageName: "mattrent/ow-controller"
-  imageTag: "latest"
-  replicaCount: 3
+  imageName: "giusdp/controller"
+  imageTag: "affinity"
 
 whisk:
   ingress:
     apiHostName: ${control_ip}
     apiHostPort: 31001
-  loadbalancer:
-    invoker_distribution: "default"
   runtimes: "myruntimes.json"
+  limits:
+    actionsInvokesPerminute: 10000
 
 nginx:
   httpNodePort: 31001
 
 invoker:
-  imageName: "mattrent/ow-invoker"
-  imageTag: "latest"
   containerFactory:
     impl: "docker"
 

@@ -1,18 +1,21 @@
 [control_plane]
 control ansible_host=${control_ip} ansible_user=${user}
 
-[workers]
-worker1 ansible_host=${worker1_ip} ansible_user=${user}
-worker2 ansible_host=${worker2_ip} ansible_user=${user}
-worker3 ansible_host=${worker3_ip} ansible_user=${user}
-worker4 ansible_host=${worker4_ip} ansible_user=${user}
-worker5 ansible_host=${worker5_ip} ansible_user=${user}
-worker6 ansible_host=${worker6_ip} ansible_user=${user}
-worker7 ansible_host=${worker7_ip} ansible_user=${user}
+[controller]
+controller1 ansible_host=${worker1_ip} ansible_user=${user}
+
+[invokers]
+worker1 ansible_host=${worker2_ip} private_ip=${private_w2_ip} ansible_user=${user}
+worker2 ansible_host=${worker3_ip} private_ip=${private_w3_ip} ansible_user=${user}
 
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3
 
 [kube-cluster:children]
 control_plane
-workers
+controller
+invokers
+
+[workers:children]
+controller
+invokers

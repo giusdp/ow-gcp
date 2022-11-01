@@ -1,0 +1,10 @@
+---
+- name: join couchbase cluster
+  shell: ./couchbase-cli server-add -c {{ hostvars['worker1'].private_ip}}:8091 --username Administrator --password password --server-add http://{{ hostvars['worker2'].private_ip}}:8091 --server-add-username someName --server-add-password somePassword --services data,index,query
+  args:
+    chdir: /opt/couchbase/bin
+
+- name: rebalance couchbase cluster
+  shell: ./couchbase-cli  rebalance -c {{ hostvars['worker1'].private_ip}}:8091 --username Administrator --password password
+  args:
+    chdir: /opt/couchbase/bin

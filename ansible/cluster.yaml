@@ -1,16 +1,9 @@
 ---
-
-# - hosts: kube-cluster
-#   gather_facts: yes
-#   become: yes
-#   roles:
-#     - { role: setup, tags: setup }
-    
 - hosts: kube-cluster
   gather_facts: yes
   become: yes
   roles:
-    - { role: docker, tags: docker }
+    - docker
 
 - hosts: control_plane
   gather_facts: yes
@@ -28,21 +21,27 @@
   gather_facts: yes
   become: yes
   roles:
-    - { role: nfs }
-
+    - nfs
 - hosts: control_plane
   gather_facts: yes
   become: yes
   roles:
-    - { role: openwhisk, tags: openwhisk }
+    - openwhisk
 
-- hosts: control_plane
+- hosts: invokers
   gather_facts: yes
   become: yes
-  tasks:
-    - name: "Healthcheck role"
-      include_role:
-        name: healthcheck
-      when: "features.healthcheck"
-      run_once: yes
-      tags: healthcheck
+  roles:
+    - { role: couchbase/install }
+
+- hosts: worker1
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: couchbase/worker1 }
+
+- hosts: worker2
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: couchbase/worker2 }

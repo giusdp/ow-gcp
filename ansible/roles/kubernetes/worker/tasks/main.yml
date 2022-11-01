@@ -1,5 +1,4 @@
 ---
-
 - name: join cluster
   shell: "{{ hostvars['control'].join_command }} >> node_joined.txt"
   args:
