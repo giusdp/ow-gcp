@@ -3,8 +3,3 @@
   shell: ./couchbase-cli cluster-init -c {{ hostvars['worker1'].private_ip }} --cluster-username Administrator --cluster-password password --services data,index,query --cluster-ramsize 512 --cluster-index-ramsize 256
   args:
     chdir: /opt/couchbase/bin
-
-- name: create testBucket testBucket
-  shell: ./couchbase-cli bucket-create --cluster {{ hostvars['worker1'].private_ip }}:8091 --username Administrator --password password --bucket testBucket --bucket-type couchbase --bucket-ramsize 512 --durability-min-level persistToMajority --enable-flush 0
-  args:
-    chdir: /opt/couchbase/bin
