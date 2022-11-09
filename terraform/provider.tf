@@ -76,7 +76,7 @@ resource "google_compute_firewall" "couchbase-rule" {
   network = google_compute_network.ow_network.name
   allow {
     protocol = "tcp"
-    ports    = ["8091", "8093"]
+    ports    = ["27017", "27018", "27019"]
   }
   source_ranges = ["${var.allowed_ip}"]
 }

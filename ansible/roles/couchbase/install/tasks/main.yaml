@@ -11,6 +11,6 @@
     state: present
     update_cache: yes
 
-- name: Sleep 20 secodns
+- name: Sleep 30 seconds
   ansible.builtin.pause:
-    seconds: 20
+    seconds: 30

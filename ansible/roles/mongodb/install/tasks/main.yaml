@@ -1,0 +1,15 @@
+---
+- name: Import the public key
+  shell: wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+
+- name: Create a list file for MongoDB.
+  shell: echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+
+- name: Install the MongoDB packages
+  apt:
+    name: mongodb-org
+    state: present
+    update_cache: yes
+
+- name: Create directories
+  shell: mkdir -p /srv/mongodb/rs0-0  /srv/mongodb/rs0-1 /srv/mongodb/rs0-2

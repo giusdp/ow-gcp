@@ -1,0 +1,5 @@
+---
+- name: init couchbase cluster
+  shell: ./couchbase-cli cluster-init -c {{ hostvars['worker1'].private_ip }} --cluster-username Administrator --cluster-password password --services data,index,query --cluster-ramsize 512 --cluster-index-ramsize 256
+  args:
+    chdir: /opt/couchbase/bin

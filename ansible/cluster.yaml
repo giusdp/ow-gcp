@@ -28,20 +28,19 @@
   roles:
     - openwhisk
 
-- hosts: invokers
+- hosts: workers
   gather_facts: yes
   become: yes
   roles:
-    - { role: couchbase/install }
+    - { role: mongodb/install }
+# - hosts: worker1
+#   gather_facts: yes
+#   become: yes
+#   roles:
+#     - { role: couchbase/worker1 }
 
-- hosts: worker1
-  gather_facts: yes
-  become: yes
-  roles:
-    - { role: couchbase/worker1 }
-
-- hosts: worker2
-  gather_facts: yes
-  become: yes
-  roles:
-    - { role: couchbase/worker2 }
+# - hosts: worker2
+#   gather_facts: yes
+#   become: yes
+#   roles:
+#     - { role: couchbase/worker2 }
