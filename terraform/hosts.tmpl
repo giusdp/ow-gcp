@@ -6,7 +6,9 @@ controller1 ansible_host=${worker1_ip} ansible_user=${user}
 
 [invokers]
 worker1 ansible_host=${worker2_ip} private_ip=${private_w2_ip} ansible_user=${user}
-worker2 ansible_host=${worker3_ip} private_ip=${private_w3_ip} ansible_user=${user}
+worker3 ansible_host=${worker4_ip} private_ip=${private_w4_ip} ansible_user=${user}
+worker5 ansible_host=${worker6_ip} private_ip=${private_w6_ip} ansible_user=${user}
+
 
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3

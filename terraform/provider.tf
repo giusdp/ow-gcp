@@ -17,18 +17,21 @@ variable "belgium_names" {
   default = {
     controller1 = "e2-medium"
     worker1     = "n1-standard-1"
-    # worker2     = "n1-standard-1"
+    worker3     = "n1-standard-1"
+    worker5     = "n1-standard-1"
   }
 }
 
-variable "oregon_names" {
-  type = map(string)
+# variable "oregon_names" {
+#   type = map(string)
 
-  default = {
-    # controller2 = "e2-medium"
-    worker2 = "n1-standard-1"
-  }
-}
+#   default = {
+#     # controller2 = "e2-medium"
+#     worker2 = "n1-standard-1"
+#     worker4 = "n1-standard-1"
+#     worker6 = "n1-standard-1"
+#   }
+# }
 
 # variable "toronto_names" {
 #   type = map(string)
@@ -132,24 +135,24 @@ resource "google_compute_instance" "europe_vms" {
 
 
 # ############ Oregon VMs
-resource "google_compute_instance" "us_east_vms" {
-  for_each     = var.oregon_names
-  name         = each.key
-  zone         = "us-east1-c"
-  machine_type = each.value
-  boot_disk {
-    initialize_params {
-      size  = 20
-      image = "ubuntu-os-cloud/ubuntu-2004-lts"
-    }
-  }
-  network_interface {
-    network = google_compute_network.ow_network.name
-    access_config {}
-  }
-  metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
-  tags     = ["private"]
-}
+# resource "google_compute_instance" "us_east_vms" {
+#   for_each     = var.oregon_names
+#   name         = each.key
+#   zone         = "us-east1-c"
+#   machine_type = each.value
+#   boot_disk {
+#     initialize_params {
+#       size  = 20
+#       image = "ubuntu-os-cloud/ubuntu-2004-lts"
+#     }
+#   }
+#   network_interface {
+#     network = google_compute_network.ow_network.name
+#     access_config {}
+#   }
+#   metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
+#   tags     = ["private"]
+# }
 
 # ############ Toronto VMs
 # resource "google_compute_instance" "toronto_vms" {
@@ -177,9 +180,17 @@ resource "local_file" "hosts" {
       control_ip    = google_compute_instance.control_plane.network_interface.0.access_config.0.nat_ip
       worker1_ip    = google_compute_instance.europe_vms["controller1"].network_interface.0.access_config.0.nat_ip
       worker2_ip    = google_compute_instance.europe_vms["worker1"].network_interface.0.access_config.0.nat_ip
-      worker3_ip    = google_compute_instance.us_east_vms["worker2"].network_interface.0.access_config.0.nat_ip
+      # worker3_ip    = google_compute_instance.us_east_vms["worker2"].network_interface.0.access_config.0.nat_ip
+      worker4_ip    = google_compute_instance.europe_vms["worker3"].network_interface.0.access_config.0.nat_ip
+      # worker5_ip    = google_compute_instance.us_east_vms["worker4"].network_interface.0.access_config.0.nat_ip
+      worker6_ip    = google_compute_instance.europe_vms["worker5"].network_interface.0.access_config.0.nat_ip
+      # worker7_ip    = google_compute_instance.us_east_vms["worker6"].network_interface.0.access_config.0.nat_ip
       private_w2_ip = google_compute_instance.europe_vms["worker1"].network_interface.0.network_ip
-      private_w3_ip = google_compute_instance.us_east_vms["worker2"].network_interface.0.network_ip
+      # private_w3_ip = google_compute_instance.us_east_vms["worker2"].network_interface.0.network_ip
+      private_w4_ip = google_compute_instance.europe_vms["worker3"].network_interface.0.network_ip
+      # private_w5_ip = google_compute_instance.us_east_vms["worker4"].network_interface.0.network_ip
+      private_w6_ip = google_compute_instance.europe_vms["worker5"].network_interface.0.network_ip
+      # private_w7_ip = google_compute_instance.us_east_vms["worker6"].network_interface.0.network_ip
       # worker4_ip = google_compute_instance.us_east_vms["controller2"].network_interface.0.access_config.0.nat_ip
       # worker4_ip = google_compute_instance.us_east_vms["worker3"].network_interface.0.access_config.0.nat_ip
       # worker6_ip = google_compute_instance.toronto_vms["controller3"].network_interface.0.access_config.0.nat_ip

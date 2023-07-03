@@ -49,3 +49,30 @@
         labels:
           openwhisk-role: "invoker"
           zone: "oregon"
+
+
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: worker5
+        labels:
+          openwhisk-role: "invoker"
+          zone: "belgium"
+
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: worker6
+        labels:
+          openwhisk-role: "invoker"
+          zone: "oregon"
