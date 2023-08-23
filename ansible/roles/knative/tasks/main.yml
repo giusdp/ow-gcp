@@ -1,0 +1,48 @@
+---
+- name: Download Knative CRDs as YAML file
+  become_user: "{{ ansible_user }}"
+  ansible.builtin.get_url:
+    url: https://github.com/knative/serving/releases/download/knative-v1.11.0/serving-crds.yaml
+    dest: ~/knative-serving-crds.yaml
+    mode: '0664'
+
+- name: Download Knative core components as YAML file
+  become_user: "{{ ansible_user }}"
+  ansible.builtin.get_url:
+    url: https://github.com/knative/serving/releases/download/knative-v1.11.0/serving-core.yaml
+    dest: ~/knative-serving-core.yaml
+    mode: '0664'
+
+- name: Download Kourier networking layer as YAML file
+  become_user: "{{ ansible_user }}"
+  ansible.builtin.get_url:
+    url: https://github.com/knative/net-kourier/releases/download/knative-v1.11.1/kourier.yaml
+    dest: ~/knative-kourier.yaml
+    mode: '0664'
+
+- name: Apply Knative CRDs to the cluster
+  become_user: "{{ ansible_user }}"
+  kubernetes.core.k8s:
+    state: present
+    src: ~/knative-serving-crds.yaml
+
+- name: Apply Knative core components to the cluster
+  become_user: "{{ ansible_user }}"
+  kubernetes.core.k8s:
+    state: present
+    src: ~/knative-serving-core.yaml
+
+- name: Apply Kourier networking layer to the cluster
+  become_user: "{{ ansible_user }}"
+  kubernetes.core.k8s:
+    state: present
+    src: ~/knative-kourier.yaml
+
+- name: Apply patch to use Kourier by default
+  become_user: "{{ ansible_user }}"
+  shell: |
+    kubectl patch configmap/config-network \
+      --namespace knative-serving \
+      --type merge \
+      --patch '{"data":{"ingress-class":"kourier.ingress.networking.knative.dev"}}'
+
