@@ -1,0 +1,23 @@
+---
+- name: Label nodes
+  include_tasks: labels.yml
+
+- name: Clone fl-deploy
+  become_user: "{{ ansible_user }}"
+  ansible.builtin.git:
+    repo: https://github.com/funlessdev/fl-deploy.git
+    dest: ~/fl-deploy
+
+- name: Install funless with kubectl
+  become_user: "{{ ansible_user }}"
+  shell: |
+    kubectl apply -f fl-deploy/kind/namespace.yml
+    kubectl apply -f fl-deploy/kind/svc-account.yml
+    kubectl apply -f fl-deploy/kind/fl-deploy/kind/prometheus-cm.yml
+    kubectl apply -f fl-deploy/kind/prometheus.yml
+    kubectl apply -f fl-deploy/kind/core-secret-postgres-user.yml
+    kubectl apply -f fl-deploy/kind/core-secret-postgres-password.yml
+    kubectl apply -f fl-deploy/kind/postgres.yml
+    kubectl apply -f fl-deploy/kind/core-secret-key-base.yml
+    kubectl apply -f fl-deploy/kind/core.yml
+    kubectl apply -f fl-deploy/kind/worker.yml

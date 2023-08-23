@@ -1,3 +1,0 @@
----
-dependencies:
-  - { role: commons/control-plane-deps }

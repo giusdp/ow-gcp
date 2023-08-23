@@ -1,5 +1,5 @@
 ---
-- name: Apply labels for openwhisk control plane
+- name: Apply labels for k8s control plane
   become_user: "{{ ansible_user }}"
   k8s:
     state: present
@@ -11,20 +11,7 @@
         labels:
           zone: "belgium"
 
-- name: Apply labels for openwhisk nodes
-  become_user: "{{ ansible_user }}"
-  k8s:
-    state: present
-    definition:
-      apiVersion: v1
-      kind: Node
-      metadata:
-        name: worker1
-        labels:
-          openwhisk-role: "invoker"
-          zone: "belgium"
-
-- name: Apply labels for openwhisk nodes
+- name: Apply labels for funless nodes
   become_user: "{{ ansible_user }}"
   k8s:
     state: present
@@ -34,10 +21,10 @@
       metadata:
         name: controller1
         labels:
-          openwhisk-role: "core"
+          fl: "core"
           zone: "belgium"
 
-- name: Apply labels for openwhisk nodes
+- name: Apply labels for funless nodes
   become_user: "{{ ansible_user }}"
   k8s:
     state: present
@@ -45,13 +32,26 @@
       apiVersion: v1
       kind: Node
       metadata:
-        name: worker2
+        name: worker1
         labels:
-          openwhisk-role: "invoker"
-          zone: "oregon"
+          fl: "worker"
+          zone: "belgium"
+
+- name: Apply labels for funless nodes
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: worker3
+        labels:
+          fl: "worker"
+          zone: "belgium"
 
 
-- name: Apply labels for openwhisk nodes
+- name: Apply labels for funless nodes
   become_user: "{{ ansible_user }}"
   k8s:
     state: present
@@ -61,18 +61,5 @@
       metadata:
         name: worker5
         labels:
-          openwhisk-role: "invoker"
+          fl: "worker"
           zone: "belgium"
-
-- name: Apply labels for openwhisk nodes
-  become_user: "{{ ansible_user }}"
-  k8s:
-    state: present
-    definition:
-      apiVersion: v1
-      kind: Node
-      metadata:
-        name: worker6
-        labels:
-          openwhisk-role: "invoker"
-          zone: "oregon"
