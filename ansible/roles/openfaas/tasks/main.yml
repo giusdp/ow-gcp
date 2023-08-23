@@ -1,0 +1,29 @@
+---
+
+- name: Download OpenFaaS namespaces YAML as file
+  become_user: "{{ ansible_user }}"
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/openfaas/faas-netes/master/namespaces.yml
+    dest: ~/of-namespaces.yaml
+    mode: '0664'
+
+- name: Apply OpenFaaS namespaces to the cluster
+  become_user: "{{ ansible_user }}"
+  kubernetes.core.k8s:
+    state: present
+    src: ~/of-namespaces.yaml
+
+- name: Add OpenFaaS Helm repository
+  become_user: "{{ ansible_user }}"
+  kubernetes.core.helm_repository:
+    repo_name: openfaas
+    repo_url: https://openfaas.github.io/faas-netes/
+  # ansible.builtin.shell: "helm repo add openfaas https://openfaas.github.io/faas-netes/"
+
+- name: Install OpenFaaS with helm
+  become_user: "{{ ansible_user }}"
+  kubernetes.core.helm:
+    name: openfaas
+    update_repo_cache: true
+    chart_ref: openfaas/openfaas
+    release_namespace: openfaas
