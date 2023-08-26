@@ -17,16 +17,16 @@
   roles:
     - { role: kubernetes/worker, tags: worker }
 
-# - hosts: control_plane
-#   gather_facts: yes
-#   become: yes
-#   roles:
-#     - nfs
-# - hosts: control_plane
-#   gather_facts: yes
-#   become: yes
-#   roles:
-#     - openwhisk
+- hosts: control_plane
+  gather_facts: yes
+  become: yes
+  roles:
+    - nfs
+- hosts: control_plane
+  gather_facts: yes
+  become: yes
+  roles:
+    - openwhisk
 
 # - hosts: mongodb
 #   gather_facts: yes
