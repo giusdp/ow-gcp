@@ -1,7 +1,3 @@
-controller:
-  imageName: "giusdp/controller"
-  imageTag: "affinity"
-
 whisk:
   ingress:
     apiHostName: ${control_ip}
@@ -12,10 +8,6 @@ whisk:
 
 nginx:
   httpNodePort: 31001
-
-invoker:
-  containerFactory:
-    impl: "docker"
 
 providers:
   alarm:
