@@ -13,7 +13,7 @@
   shell: |
     kubectl apply -f fl-deploy/kind/namespace.yml
     kubectl apply -f fl-deploy/kind/svc-account.yml
-    kubectl apply -f fl-deploy/kind/fl-deploy/kind/prometheus-cm.yml
+    kubectl apply -f fl-deploy/kind/prometheus-cm.yml
     kubectl apply -f fl-deploy/kind/prometheus.yml
     kubectl apply -f fl-deploy/kind/core-secret-postgres-user.yml
     kubectl apply -f fl-deploy/kind/core-secret-postgres-password.yml

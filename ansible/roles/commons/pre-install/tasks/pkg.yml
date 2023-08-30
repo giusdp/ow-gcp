@@ -12,16 +12,11 @@
 
 - name: install kubelet
   apt:
-    name: kubelet=1.22.4-00 # TODO: move vrs to var
+    name: kubelet
     state: present
     update_cache: true
 
 - name: install kubeadm
   apt:
-    name: kubeadm=1.22.4-00
-    state: present
-
-- name: install nfs-common
-  apt:
-    name: nfs-common
+    name: kubeadm
     state: present
