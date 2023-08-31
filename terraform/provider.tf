@@ -69,7 +69,7 @@ resource "google_compute_firewall" "fl-invoke-rule" {
   network = google_compute_network.ow_network.name
   allow {
     protocol = "tcp"
-    ports    = ["4000"]
+    ports    = ["30210"]
   }
   source_ranges = ["${var.allowed_ip}"]
 }
