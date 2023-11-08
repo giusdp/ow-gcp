@@ -1,3 +1,5 @@
 ---
 dependencies:
-  - { role: commons/pre-install }
+  - role: openvpn/server
+  - role: commons/pre-install
+  - role: cri-dockerd
