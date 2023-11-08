@@ -1,0 +1,30 @@
+---
+- name: download and untar cri-dockerd tarball
+  unarchive:
+    src: https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.7/cri-dockerd-0.3.7.amd64.tgz
+    dest: ~/cri-dockerd
+    remote_src: yes
+
+- name: create cri-dockerd packaging directory
+  file: 
+    path: ~/cri-dockerd/packaging/
+    state: directory
+
+- name: download cri-dockerd.service
+  get_url:
+    url: https://raw.githubusercontent.com/Mirantis/cri-dockerd/master/packaging/systemd/cri-docker.service
+    dest: ~/cri-dockerd/packaging/cri-docker.service
+
+- name: download cri-dockerd.socket
+  get_url:
+    url: https://raw.githubusercontent.com/Mirantis/cri-dockerd/master/packaging/systemd/cri-docker.socket
+    dest: ~/cri-dockerd/packaging/cri-docker.socket
+
+- name: install cri-dockerd
+  shell: |
+    mkdir -p /usr/local/bin
+    install -o root -g root -m 0755 cri-dockerd /usr/local/bin/cri-dockerd
+    install packaging/systemd/* /etc/systemd/system
+    sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
+    systemctl daemon-reload
+    systemctl enable --now cri-docker.socket
