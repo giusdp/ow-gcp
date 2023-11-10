@@ -2,7 +2,7 @@
 - name: download and untar cri-dockerd tarball
   unarchive:
     src: https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.7/cri-dockerd-0.3.7.amd64.tgz
-    dest: ~/cri-dockerd
+    dest: ~/
     remote_src: yes
 
 - name: create cri-dockerd packaging directory
@@ -23,8 +23,8 @@
 - name: install cri-dockerd
   shell: |
     mkdir -p /usr/local/bin
-    install -o root -g root -m 0755 cri-dockerd /usr/local/bin/cri-dockerd
-    install packaging/systemd/* /etc/systemd/system
+    install -o root -g root -m 0755 ~/cri-dockerd/cri-dockerd /usr/local/bin/cri-dockerd
+    install ~/cri-dockerd/packaging/* /etc/systemd/system
     sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
     systemctl daemon-reload
     systemctl enable --now cri-docker.socket

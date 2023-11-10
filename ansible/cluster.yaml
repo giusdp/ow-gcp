@@ -12,14 +12,12 @@
   roles:
     - { role: kubernetes/control, tags: control }
     - funless
-    - openvpn/server
 
 - hosts: workers
   gather_facts: yes
   become: yes
   roles:
     - { role: kubernetes/worker, tags: worker }
-    - openvpn/client
 
 # - hosts: control_plane
 #   gather_facts: yes

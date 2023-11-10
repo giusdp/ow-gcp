@@ -21,3 +21,4 @@
     kubectl apply -f fl-deploy/kind/core-secret-key-base.yml
     kubectl apply -f fl-deploy/kind/core.yml
     kubectl apply -f fl-deploy/kind/worker.yml
+    kubectl apply -f fl-deploy/kind/worker-arm.yml
