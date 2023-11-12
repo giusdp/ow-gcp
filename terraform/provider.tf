@@ -114,6 +114,7 @@ resource "local_file" "hosts" {
   content = templatefile("hosts.tmpl",
     {
       control_ip = google_compute_instance.control_plane.network_interface.0.access_config.0.nat_ip
+      private_control_ip = google_compute_instance.control_plane.network_interface.0.network_ip
       worker1_ip = google_compute_instance.europe_vms["controller1"].network_interface.0.access_config.0.nat_ip
       worker2_ip = google_compute_instance.europe_vms["worker1"].network_interface.0.access_config.0.nat_ip
       worker4_ip = google_compute_instance.europe_vms["worker3"].network_interface.0.access_config.0.nat_ip

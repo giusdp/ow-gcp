@@ -1,5 +1,5 @@
 [control_plane]
-control ansible_host=${control_ip} ansible_user=${user}
+control ansible_host=${control_ip} private_ip=${private_control_ip} ansible_user=${user}
 
 [controller]
 controller1 ansible_host=${worker1_ip} ansible_user=${user}
