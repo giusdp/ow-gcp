@@ -1,0 +1,58 @@
+---
+- name: populate service facts
+  service_facts: 
+
+- name: download openvpn install script
+  get_url:
+    url:  https://git.io/vpn
+    dest: ~/openvpn-install.sh
+
+
+- name: remove stdin-consuming line from openvpn-install.sh
+  lineinfile:
+    dest: ~/openvpn-install.sh
+    line: read -N 999999 -t 0.001
+    state: absent
+
+# select the default for everything except DNS (we use Quad9 to ensure same DNS on all clients) and first client name
+- name: install openvpn server
+  shell: 
+    cmd: |
+      printf "\n\n\n\n%s\n%s" 5 controller1 \
+      | bash ~/openvpn-install.sh
+  when: 
+  - "'openvpn-server@server.service' not in services"
+  
+
+- name: add client-to-client option to server
+  lineinfile:
+    dest: /etc/openvpn/server/server.conf
+    line: client-to-client
+
+- name: reload openvpn server
+  systemd:
+    name: openvpn-server@server
+    state: restarted
+    daemon_reload: true
+
+- name: generate client certificates
+  shell:
+    cmd: |
+      test -e "/root/{{ item }}.ovpn" ||
+      printf "%s\n%s\n" 1 "{{ item }}" \
+      | bash ~/openvpn-install.sh
+  with_items: "{{ groups['invokers'] }}"
+
+
+- name: copy controller certificate to local
+  fetch:
+    src: "/root/controller1.ovpn"
+    dest: "controller1.ovpn"
+    flat: yes
+
+- name: copy worker certificates to local
+  fetch:
+    src: "/root/{{ item }}.ovpn"
+    dest: "{{ item }}.ovpn"
+    flat: yes
+  with_items: "{{ groups['invokers'] }}"
