@@ -14,11 +14,11 @@
     line: read -N 999999 -t 0.001
     state: absent
 
-# select the default for everything except DNS (we use Quad9 to ensure same DNS on all clients) and first client name
+# select the default for everything except protocol (we use TCP) and first client name
 - name: install openvpn server
   shell: 
     cmd: |
-      printf "\n\n\n\n%s\n%s" 5 controller1 \
+      printf "\n\n%s\n\n\n%s" 2 controller1 \
       | bash ~/openvpn-install.sh
   when: 
   - "'openvpn-server@server.service' not in services"

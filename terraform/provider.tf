@@ -57,7 +57,7 @@ resource "google_compute_firewall" "openvpn-rule" {
   name    = "openvpn-server-allow"
   network = google_compute_network.ow_network.name
   allow {
-    protocol = "udp"
+    protocol = "tcp"
     ports    = ["1194"]
   }
   source_ranges = ["${var.allowed_ip}"]
