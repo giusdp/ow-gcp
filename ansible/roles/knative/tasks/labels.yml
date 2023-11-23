@@ -1,0 +1,65 @@
+---
+- name: Apply labels for k8s control plane
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: k8s-control-plane
+        labels:
+          zone: "belgium"
+
+- name: Apply labels for funless nodes
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: controller1
+        labels:
+          fl: "core"
+          zone: "belgium"
+
+- name: Apply labels for funless nodes
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: worker1
+        labels:
+          fl: "worker"
+          zone: "belgium"
+
+- name: Apply labels for funless nodes
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: worker3
+        labels:
+          fl: "worker"
+          zone: "belgium"
+
+
+- name: Apply labels for funless nodes
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: worker5
+        labels:
+          fl: "worker"
+          zone: "belgium"

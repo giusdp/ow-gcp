@@ -11,7 +11,7 @@
   become: yes
   roles:
     - { role: kubernetes/control, tags: control }
-    - funless
+    - knative
 
 - hosts: workers
   gather_facts: yes

@@ -1,0 +1,49 @@
+---
+- name: Label nodes
+  include_tasks: labels.yml
+
+- name: Install knative with kubectl
+  become_user: "{{ ansible_user }}"
+  shell: |
+    kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.12.1/serving-crds.yaml
+    kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.12.1/serving-core.yaml
+
+- name: Download kourier manifest
+  become_user: "{{ ansible_user }}"
+  get_url:
+    url: https://github.com/knative/net-kourier/releases/download/knative-v1.12.1/kourier.yaml
+    dest: ~/kourier.yaml
+
+- name: Change LoadBalancer to NodePort in kourier.yaml
+  become_user: "{{ ansible_user }}"
+  ansible.builtin.replace:
+      path: ~/kourier.yaml
+      regexp: 'type: LoadBalancer'
+      replace: 'type: NodePort'
+
+- name: add hardcoded nodePort 31080 for port 80
+  become_user: "{{ ansible_user }}"
+  ansible.builtin.replace:
+    path: ~/kourier.yaml # Replace with the actual path to your YAML file
+    regexp: '(\s+- name: http2\n\s+port: 80\n\s+protocol: TCP\n\s+targetPort: 8080)'
+    replace: '\1\n      nodePort: 31080'
+
+- name: Install kourier
+  become_user: "{{ ansible_user }}"
+  shell: kubectl apply -f ~/kourier.yaml
+
+- name: Patch configmap to use kourier
+  become_user: "{{ ansible_user }}"
+  shell: |
+    kubectl patch configmap/config-network \
+    --namespace knative-serving \
+    --type merge \
+    --patch '{"data":{"ingress.class":"kourier.ingress.networking.knative.dev"}}'
+
+- name: Patch with {ansible host}.slip.io
+  become_user: "{{ ansible_user }}"
+  shell: |
+    kubectl patch configmap/config-domain \
+    --namespace knative-serving \
+    --type merge \
+    --patch '{"data":{"{{ ansible_host }}.slip.io":""}}'
