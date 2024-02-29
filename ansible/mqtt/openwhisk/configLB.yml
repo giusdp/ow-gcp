@@ -1,0 +1,24 @@
+- default:
+    - workers:
+        - set:
+- DB:
+    - workers:
+        - wrk: "user-wrk1-virtualbox"
+          invalidate:
+            - capacity_used: 50
+        - wrk: "worker-cloud"
+      strategy: best-first
+- Cloud:
+    - controller: "controller"
+      workers:
+        - set:
+      topology_tolerance: "none"
+  strategy: random
+  followup: fail
+- MQTT:
+    - controller: "ubuntu2204"
+      workers:
+        - set:
+      topology_tolerance: "none"
+  strategy: random
+  followup: fail
