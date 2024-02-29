@@ -1,0 +1,65 @@
+---
+- name: install nfs server and nfs-common
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - nfs-kernel-server
+    - nfs-common
+
+- name: Creating mountable shared folders
+  file: 
+    path: /var/nfs/kubedata
+    owner: nobody
+    group: nogroup
+    state: directory
+
+- name: Configure nfs server
+  copy:
+    dest: /etc/exports
+    content: |
+      /var/nfs/kubedata *(rw,sync,no_subtree_check,no_root_squash,no_all_squash)
+      
+- name: Configure nfs server
+  ansible.builtin.shell:
+    cmd: exportfs -ra
+
+- name: Starting nfs server
+  service:
+    name: nfs-server 
+    state: started
+    enabled: yes
+
+- name: Add nfs provisioner helm chart repo
+  become_user: "{{ ansible_user }}"
+  ansible.builtin.shell:
+    cmd: helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+
+- name: Deploy nfs provisioner with helm
+  become_user: "{{ ansible_user }}"
+  kubernetes.core.helm:
+    name: nfs-provisioner
+    chart_ref: nfs-subdir-external-provisioner/nfs-subdir-external-provisioner
+    release_namespace: default
+    values:
+      nfs:
+        server: 10.8.0.1
+        path: /var/nfs/kubedata
+      storageClass:
+        defaultClass: true
+
+# - name: Add default storage class for NFS provisioner
+#   become_user: "{{ ansible_user }}"
+#   k8s:
+#     state: present
+#     definition:
+#       apiVersion: storage.k8s.io/v1 
+#       kind: StorageClass 
+#       metadata: 
+#         name: openwhisk-nfs 
+#         annotations: 
+#           storageclass.kubernetes.io/is-default-class: "true" 
+#       provisioner: k8s-sigs.io/nfs-subdir-external-provisioner 
+#       allowVolumeExpansion: true 
+#       parameters: 
+#         archiveOnDelete: "false"

@@ -1,0 +1,25 @@
+[control_plane]
+control ansible_host=${control_ip} private_ip=${private_control_ip} ansible_user=${user}
+
+[controller]
+controller1 ansible_host=${controller_ip} ansible_user=${user}
+edgecontroller ansible_host=${edgecontroller_ip} ansible_user=root
+
+[invokers]
+worker ansible_host=${worker_ip} private_ip=${private_worker_ip} ansible_user=${user}
+edgeworker ansible_host=${edgeworker_ip} ansible_user=root
+
+[broker]
+broker ansible_host=${edgebroker_ip} ansible_user=root
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+
+[kube-cluster:children]
+control_plane
+controller
+invokers
+
+[workers:children]
+controller
+invokers 

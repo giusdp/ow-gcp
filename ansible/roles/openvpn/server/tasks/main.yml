@@ -35,7 +35,14 @@
     state: restarted
     daemon_reload: true
 
-- name: generate client certificates
+- name: generate edge controller client certificates (controller1 was already created during install)
+  shell:
+    cmd: |
+      test -e "/root/edgecontroller.ovpn" ||
+      printf "%s\n%s\n" 1 "edgecontroller" \
+      | bash ~/openvpn-install.sh
+
+- name: generate worker client certificates
   shell:
     cmd: |
       test -e "/root/{{ item }}.ovpn" ||
@@ -43,12 +50,12 @@
       | bash ~/openvpn-install.sh
   with_items: "{{ groups['invokers'] }}"
 
-
 - name: copy controller certificate to local
   fetch:
-    src: "/root/controller1.ovpn"
-    dest: "controller1.ovpn"
+    src: "/root/{{ item }}.ovpn"
+    dest: "{{ item }}.ovpn"
     flat: yes
+  with_items: "{{ groups['controller'] }}"
 
 - name: copy worker certificates to local
   fetch:

@@ -1,0 +1,29 @@
+version: 3
+
+tasks:
+  default:
+    - task --list-all
+
+  create:
+    cmds: 
+      - | 
+        cd opentofu
+        tofu apply -auto-approve
+
+  destroy:
+    cmds: 
+      - | 
+        cd opentofu
+        tofu destroy -auto-approve
+
+  ansible:
+    cmds: 
+      - | 
+        cd ansible
+        ansible-playbook cluster.yaml
+
+  setup:
+    cmds: 
+      - task: create
+      - sleep 60
+      - task: ansible

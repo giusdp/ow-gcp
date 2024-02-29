@@ -26,3 +26,9 @@
     url: https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
     dest: /usr/bin/yq
     mode: '0755'
+
+- name: install nfs-common
+  apt:
+    name: nfs-common
+    state: present
+    update_cache: true

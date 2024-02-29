@@ -5,7 +5,7 @@
     state: present
     force: yes
 
-- name: copy certificates to clients
+- name: copy certificates to clients from {{ inventory_hostname }}
   copy:
     src: "{{ inventory_hostname }}.ovpn"
     dest: "/etc/openvpn/client.conf"
@@ -15,11 +15,11 @@
   file: path="./{{ inventory_hostname }}.ovpn" state=absent
   delegate_to: 127.0.0.1
 
-- name: edit address in certificates
-  shell:
-    cmd: |
-      HOST_IP="{{ hostvars['control'].private_ip }}"
-      sed -Ein "s/remote[ ]*([0-9\.]+)[ ]*([0-9]+)/remote $HOST_IP \2/" /etc/openvpn/client.conf
+# - name: edit address in certificates
+#   shell:
+#     cmd: |
+#       HOST_IP="{{ hostvars['control'].private_ip }}"
+#       sed -Ein "s/remote[ ]*([0-9\.]+)[ ]*([0-9]+)/remote $HOST_IP \2/" /etc/openvpn/client.conf
 
 - name: ignore redirect-gateway in certificates
   shell:

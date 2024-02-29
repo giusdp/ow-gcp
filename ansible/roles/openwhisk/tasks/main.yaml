@@ -1,0 +1,95 @@
+---
+- name: Apply labels for openwhisk control plane
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: k8s-control-plane
+        labels:
+          zone: "belgium"
+
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: worker
+        labels:
+          openwhisk-role: "invoker"
+          zone: "belgium"
+
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: controller
+        labels:
+          openwhisk-role: "core"
+          zone: "belgium"
+
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: edgecontroller
+        labels:
+          openwhisk-role: "core"
+          zone: "edge"
+
+- name: Apply labels for openwhisk nodes
+  become_user: "{{ ansible_user }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: edgeworker
+        labels:
+          openwhisk-role: "invoker"
+          zone: "edge"
+- name: Clone openwhisk-deploy-kube
+  become_user: "{{ ansible_user }}"
+  ansible.builtin.git:
+    repo: https://github.com/mattrent/openwhisk-deploy-kube.git
+    dest: ~/openwhisk-deploy-kube
+
+- name: Copy mycluster.yaml into openwhisk-deploy-kube
+  become_user: "{{ ansible_user }}"
+  copy:
+    src: ../../../mycluster.yaml
+    dest: ~/openwhisk-deploy-kube/
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Copy myruntimes.json into openwhisk-deploy-kube/
+  become_user: "{{ ansible_user }}"
+  copy:
+    src: ../../../myruntimes.json
+    dest: ~/openwhisk-deploy-kube/helm/openwhisk/
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Install Openwhisk with helm
+  become_user: "{{ ansible_user }}"
+  kubernetes.core.helm:
+    name: owdev
+    chart_ref: ~/openwhisk-deploy-kube/helm/openwhisk
+    release_namespace: openwhisk
+    create_namespace: yes
+    values_files:
+      - "/home/{{ ansible_user }}/openwhisk-deploy-kube/mycluster.yaml"

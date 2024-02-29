@@ -11,7 +11,6 @@
   become: yes
   roles:
     - { role: kubernetes/control, tags: control }
-    - funless
 
 - hosts: workers
   gather_facts: yes
@@ -19,16 +18,23 @@
   roles:
     - { role: kubernetes/worker, tags: worker }
 
-# - hosts: control_plane
-#   gather_facts: yes
-#   become: yes
-#   roles:
-#     - nfs
-# - hosts: control_plane
-#   gather_facts: yes
-#   become: yes
-#   roles:
-#     - openwhisk
+- hosts: control_plane
+  gather_facts: yes
+  become: yes
+  roles:
+    - nfs
+    
+- hosts: control_plane
+  gather_facts: yes
+  become: yes
+  roles:
+    - openwhisk
+  
+- hosts: broker
+  gather_facts: yes
+  become: yes
+  roles:
+    - broker
 
 # - hosts: mongodb
 #   gather_facts: yes

@@ -1,0 +1,47 @@
+controller:
+  imageName: "mattrent/ow-controller"
+  imageTag: "latest"
+  replicaCount: 2
+
+whisk:
+  ingress:
+    apiHostName: ${control_ip}
+    apiHostPort: 31001
+  runtimes: "myruntimes.json"
+  limits:
+    actionsInvokesPerminute: 10000
+
+nginx:
+  httpNodePort: 31001
+
+invoker:
+  imageName: "mattrent/ow-invoker"
+  imageTag: "latest"
+  containerFactory:
+    impl: "docker"
+
+providers:
+  alarm:
+    enabled: false
+  kafka:
+    enabled: false
+
+probes:
+  zookeeper:
+    livenessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+    readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+  kafka:
+    livenessProbe:
+      initialDelaySeconds: 45
+      periodSeconds: 10
+      timeoutSeconds: 15
+    readinessProbe:
+      initialDelaySeconds: 45
+      periodSeconds: 10
+      timeoutSeconds: 15
