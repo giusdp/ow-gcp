@@ -22,7 +22,7 @@ provider "digitalocean" {
 
 # Create the edge controller on digitalocean
 resource "digitalocean_droplet" "edge_controller" {
-  image    = "ubuntu-22-04-x64"
+  image    = "ubuntu-20-04-x64"
   name     = "edgecontroller"
   region   = "fra1"
   size     = "s-2vcpu-4gb"
@@ -32,7 +32,7 @@ resource "digitalocean_droplet" "edge_controller" {
 
 # Create the edge worker on digitalocean
 resource "digitalocean_droplet" "edge_worker" {
-  image    = "ubuntu-22-04-x64"
+  image    = "ubuntu-20-04-x64"
   name     = "edgeworker"
   region   = "fra1"
   size     = "s-2vcpu-4gb"
@@ -42,7 +42,7 @@ resource "digitalocean_droplet" "edge_worker" {
 
 # Create the edge broker on digitalocean
 resource "digitalocean_droplet" "edge_broker" {
-  image    = "ubuntu-22-04-x64"
+  image    = "ubuntu-20-04-x64"
   name     = "broker"
   region   = "fra1"
   size     = "s-2vcpu-4gb"
@@ -114,11 +114,12 @@ resource "google_compute_firewall" "private-ports" {
 ########### Belgium VMs (with k8s control_plane)
 resource "google_compute_instance" "control_plane" {
   name         = "k8s-control-plane"
+  zone         = "europe-west1-b"
   machine_type = "e2-medium"
   boot_disk {
     initialize_params {
       size  = 20
-      image = "ubuntu-os-cloud/ubuntu-2204-lts"
+      image = "ubuntu-os-cloud/ubuntu-2004-lts"
     }
   }
   network_interface {
@@ -136,8 +137,8 @@ resource "google_compute_instance" "europe_vms" {
   machine_type = each.value
   boot_disk {
     initialize_params {
-      size  = 20
-      image = "ubuntu-os-cloud/ubuntu-2204-lts"
+      size  = 40
+      image = "ubuntu-os-cloud/ubuntu-2004-lts"
     }
   }
   network_interface {

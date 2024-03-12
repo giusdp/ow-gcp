@@ -5,25 +5,95 @@ tasks:
     - task --list-all
 
   create:
-    cmds: 
-      - | 
+    cmds:
+      - |
         cd opentofu
         tofu apply -auto-approve
 
   destroy:
-    cmds: 
-      - | 
+    cmds:
+      - |
         cd opentofu
         tofu destroy -auto-approve
 
   ansible:
-    cmds: 
-      - | 
+    cmds:
+      - |
         cd ansible
         ansible-playbook cluster.yaml
 
+  wsk-setup:
+    cmds:
+      - |
+        HOST="$(awk 'NR==2 {print $2}' ./ansible/hosts.ini | cut -d'=' -f2)"
+        wsk -i property set --apihost ${HOST}:31001 --auth 23bc46b1-71f6-4ed5-8c54-816aa4f8c502:123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP
+
+  create-functions:
+    cmds:
+      - |
+        cd mqtt_benchs/functions
+        wsk -i action update mqtt mqtt.zip --kind nodejs:12 --web true -a tag MQTT
+        wsk -i action update feature_extraction feature_extraction.js --web true -a tag DB
+        wsk -i action update feature_analysis feature_analysis.js --web true -a tag Cloud
+        wsk -i action update refresh hello.js
+
+  refresh:
+    cmds:
+      - wsk -i action invoke refresh -p controller_config_refresh true
+
+  master:
+    cmds:
+      - |
+        mip="$(awk 'NR==2 {print $2}' ./ansible/hosts.ini | cut -d'=' -f2)"
+        ssh -i ow-gcp-key depalma_gsp@${mip}
+  broker:
+    cmds:
+      - |
+        broker_ip="$(awk 'NR==13 {print $2}' ./ansible/hosts.ini | cut -d'=' -f2)"
+        ssh -i ow-gcp-key root@${broker_ip}
+
+  mfull:
+    vars:
+      HOST: 10.135.0.3
+      DBHOST:
+        sh: awk 'NR==13 {print $2}' ./ansible/hosts.ini | cut -d'=' -f2
+    cmds:
+      - task: create-functions
+      - wsk -i action invoke mqtt -p tag MQTT -p host {{.HOST}} -p host {{.DBHOST}} -p port 9999 -r
+      - nuv activation list -i
+      - task: last-log
+  m:
+    vars:
+      HOST: 10.135.0.3
+      DBHOST:
+        sh: awk 'NR==13 {print $2}' ./ansible/hosts.ini | cut -d'=' -f2
+    cmds:
+      - wsk -i action invoke mqtt -p tag MQTT -p host {{.HOST}} -p db_host {{.DBHOST}} -p port 9999 -r
+      - nuv activation list -i
+      - task: last-log
+
+  e:
+    vars:
+      DBHOST:
+        sh: awk 'NR==13 {print $2}' ./ansible/hosts.ini | cut -d'=' -f2
+    cmds:
+      - wsk -i action invoke feature_extraction -p tag DB -p db_host {{.DBHOST}} -r
+      - nuv activation list -i
+      - nuv activation list -i
+      - task: last-log
+
+  last-log:
+    vars:
+      id:
+        sh: nuv activation list -i | awk 'NR==2 {print $3}'
+    cmds:
+      - nuv logs -i {{.id}}
+
   setup:
-    cmds: 
+    cmds:
       - task: create
-      - sleep 60
+      - sleep 120
       - task: ansible
+      - task: wsk-setup
+      - sleep 600
+      - task: create-functions

@@ -5,9 +5,9 @@
     state: present
     force: yes
 
-- name: update kubelet advertised address
-  shell: |
-    sed -Ein "s/Environment=\"KUBELET_CONFIG_ARGS=[^\"]*/& --node-ip=10.8.0.1/" /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+# - name: update kubelet advertised address
+#   shell: |
+#     sed -Ein "s/Environment=\"KUBELET_CONFIG_ARGS=[^\"]*/& --node-ip=10.8.0.1/" /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 - name: restart kubelet
   systemd:

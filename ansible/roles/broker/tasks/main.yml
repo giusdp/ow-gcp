@@ -1,6 +1,24 @@
-- name: Move mqtt folder to host
+- name: Move mqtt folder content to host (run_sensors.sh)
   ansible.builtin.copy:
-    src: "{{ lookup('env', 'PWD') }}/mqtt/mqtt_python"
+    src: "{{ lookup('env', 'PWD') }}/mqtt/mqtt_python/run_sensors.sh"
+    dest: ~/
+    remote_src: false
+
+- name: Move mqtt folder content to host (client.py)
+  ansible.builtin.copy:
+    src: "{{ lookup('env', 'PWD') }}/mqtt/mqtt_python/client.py"
+    dest: ~/
+    remote_src: false
+
+- name: Move mqtt folder content to host (broker.py)
+  ansible.builtin.copy:
+    src: "{{ lookup('env', 'PWD') }}/mqtt/mqtt_python/broker.py"
+    dest: ~/
+    remote_src: false
+
+- name: Move mqtt folder content to host (subscriber.py)
+  ansible.builtin.copy:
+    src: "{{ lookup('env', 'PWD') }}/mqtt/mqtt_python/subscriber.py"
     dest: ~/
     remote_src: false
 
@@ -15,20 +33,78 @@
     executable: pip3
     state: present
 
-- name: Add mongodb key
-  shell: wget -qO- https://pgp.mongodb.com/server-7.0.asc | gpg --dearmor | sudo tee /usr/share/keyrings/mongodb-server-7.0.gpg >/dev/null
+- name: Add CouchDB repository
+  shell: curl https://couchdb.apache.org/repo/keys.asc | gpg --dearmor | tee /usr/share/keyrings/couchdb-archive-keyring.gpg >/dev/null 2>&1
 
-- name: Add mongodb repository
-  shell: echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee -a /etc/apt/sources.list.d/mongodb-org-7.0.list
+- name: Source /etc/os-release
+  shell: . /etc/os-release
+  # debug: msg="{{ output }}"
 
-- name: Install mongodb with apt update
+- name: Add CouchDB key
+  shell: echo "deb [signed-by=/usr/share/keyrings/couchdb-archive-keyring.gpg] https://apache.jfrog.io/artifactory/couchdb-deb/ {{ ansible_distribution_release }} main" | tee /etc/apt/sources.list.d/couchdb.list >/dev/null
+
+- name: Start broker.py in the background
+  shell: nohup python3 broker.py > /dev/null 2>&1 &
+
+- name: Start run_sensors.sh in the background
+  shell: chmod +x run_sensors.sh && nohup ./run_sensors.sh > /dev/null 2>&1 &
+
+- name: Install CouchDB Archive Keyring
+  shell: curl https://couchdb.apache.org/repo/keys.asc | gpg --dearmor | tee /usr/share/keyrings/couchdb-archive-keyring.gpg >/dev/null 2>&1
+
+- set_fact:
+    os_version_codename: "{{ ansible_facts.lsb.codename }}"
+
+- name: Create apt sources for couchdb
+  template:
+    src: "{{ lookup('env', 'PWD') }}/mqtt/couchdb.list.j2"
+    dest: /etc/apt/sources.list.d/couchdb.list
+
+- name: update apt to ensure sources are present
+  environment: "noninteractive"
   apt:
-    update_cache: yes
-    name: mongodb-org
-    state: present
+    update-cache: true
+- name: debconf mode
+  ansible.builtin.debconf:
+    name: couchdb
+    question: couchdb/mode
+    value: standalone
+    vtype: select
+- name: debconf bindaddresss
+  ansible.builtin.debconf:
+    name: couchdb
+    question: couchdb/bindaddress
+    value: "0.0.0.0"
+    vtype: string
+- name: debconf adminpass
+  ansible.builtin.debconf:
+    name: couchdb
+    question: couchdb/adminpass
+    value: "password"
+    vtype: password
+- name: debconf cookie
+  ansible.builtin.debconf:
+    name: couchdb
+    question: couchdb/cookie
+    value: 1234
+    vtype: string
 
-- name: Start mongodb service
-  service:
-    name: mongod
-    state: started
-    enabled: yes
+- name: adminpass again
+  ansible.builtin.debconf:
+    name: couchdb
+    question: couchdb/adminpass_again
+    value: "password"
+    vtype: password
+
+- name: ensure couchdb is at the latest version, bypass interactive install
+  environment: "noninteractive"
+  apt: name=couchdb state=latest
+
+- name: Install CouchDB configuration
+  template:
+    src: "{{ lookup('env', 'PWD') }}/mqtt/local.ini.j2"
+    dest: /opt/couchdb/etc/local.ini
+    mode: "0640"
+
+- name: Create docs database
+  shell: curl -X PUT "http://localhost:5984/docs" -u 'admin:password'

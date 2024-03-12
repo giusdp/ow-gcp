@@ -1,0 +1,21 @@
+[admins]
+admin = password
+
+[couchdb]
+single_node = true
+single_node=true
+max_document_size = 50000000
+
+[chttpd]
+bind_address = 0.0.0.0
+require_valid_user = false
+max_http_request_size = 4294967296
+enable_cors = false
+
+[chttpd_auth]
+require_valid_user = false
+
+[httpd]
+WWW-Authenticate = Basic realm="couchdb"
+bind_address = 0.0.0.0
+enable_cors = false

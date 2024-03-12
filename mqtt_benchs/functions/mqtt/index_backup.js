@@ -1,4 +1,3 @@
-const mqtt = require('mqtt')
 const http = require('http')
 
 async function insertInDB(host, port, user, pwd, name, vals) {
@@ -17,14 +16,14 @@ async function insertInDB(host, port, user, pwd, name, vals) {
 			agent: false
 		}
 		let sizes = {}
-
+		
 		for (let k in vals) {
 			sizes[k] = vals[k].length
 			body["docs"].push({ "name": k, "value": vals[k] })
 		}
-
+		
 		let res = ""
-
+		
 		let req = http.request(options, (result) => {
 			result.on('data', (chunk) => {
 				res += chunk
@@ -36,23 +35,24 @@ async function insertInDB(host, port, user, pwd, name, vals) {
 				})
 			})
 		})
-
+		
 		req.on('error', (e) => reject({ "req_error": e }))
 		req.write(JSON.stringify(body))
 		req.end()
 	})
 }
 
-function main(params) {
-	let host = params.host
-	let port = params.port
-	let sensors_amount = params.sensors_amount
+function myAction(args) {
+	const mqtt = require('mqtt')
+	let host = args.host
+	let port = args.port
+	let sensors_amount = args.sensors_amount
 
-	let db_host = params.db_host ? params.db_host : host
-	let db_port = params.db_port ? params.db_port : 5984
-	let db_pwd = params.db_pwd ? params.db_pwd : 'password'
-	let db_user = params.db_user ? params.db_user : 'admin'
-	let db_name = params.db_name ? params.db_name : 'docs'
+	let db_host = args.db_host ? args.db_host : host
+	let db_port = args.db_port ? args.db_port : 27017
+	let db_pwd = args.db_pwd ? args.db_pwd : 'password'
+	let db_user = args.db_user ? args.db_user : 'admin'
+	let db_name = args.db_name ? args.db_name : 'docs'
 
 	let topics = []
 	let values = {
@@ -91,4 +91,4 @@ function main(params) {
 	})
 }
 
-exports.main = main
+exports.main = myAction;

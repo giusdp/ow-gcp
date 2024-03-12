@@ -23,19 +23,18 @@
   become: yes
   roles:
     - nfs
-    
+
 - hosts: control_plane
   gather_facts: yes
   become: yes
   roles:
     - openwhisk
-  
+
 - hosts: broker
   gather_facts: yes
   become: yes
   roles:
     - broker
-
 # - hosts: mongodb
 #   gather_facts: yes
 #   become: yes

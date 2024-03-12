@@ -62,6 +62,7 @@
         labels:
           openwhisk-role: "invoker"
           zone: "edge"
+
 - name: Clone openwhisk-deploy-kube
   become_user: "{{ ansible_user }}"
   ansible.builtin.git:

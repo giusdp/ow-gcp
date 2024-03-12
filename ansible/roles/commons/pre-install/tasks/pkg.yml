@@ -1,14 +1,21 @@
 ---
-- name: add Kubernetes apt-key
-  apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+- name: install curl
+  apt:
+    name: curl
     state: present
+    update_cache: true
 
-- name: add Kubernetes' APT repository
-  apt_repository:
-    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
-    state: present
-    filename: 'kubernetes'
+- name: create /etc/apt/keyrings
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: add Kubernetes key
+  shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+- name: add Kubernetes repo
+  shell: echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" | tee /etc/apt/sources.list.d/kubernetes.list
 
 - name: install kubelet
   apt:
@@ -22,10 +29,10 @@
     state: present
 
 - name: install yq
-  get_url: 
+  get_url:
     url: https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
     dest: /usr/bin/yq
-    mode: '0755'
+    mode: "0755"
 
 - name: install nfs-common
   apt:

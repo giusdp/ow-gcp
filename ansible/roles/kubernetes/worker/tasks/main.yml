@@ -1,8 +1,8 @@
 ---
-- name: update kubelet advertised address
-  shell: |
-    NODEIP=$(ip -f inet addr show tun0 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')
-    sed -Ein "s/Environment=\"KUBELET_CONFIG_ARGS=[^\"]*/& --node-ip=$NODEIP/" /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+# - name: update kubelet advertised address
+#   shell: |
+#     NODEIP=$(ip -f inet addr show tun0 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')
+#     sed -Ein "s/Environment=\"KUBELET_CONFIG_ARGS=[^\"]*/& --node-ip=$NODEIP/" /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 - name: restart kubelet
   systemd:

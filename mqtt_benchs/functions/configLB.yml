@@ -3,22 +3,22 @@
         - set:
 - DB:
     - workers:
-        - wrk: "user-wrk1-virtualbox"
+        - wrk: "edgeworker"
           invalidate:
             - capacity_used: 50
-        - wrk: "worker-cloud"
+        - wrk: "worker"
       strategy: best-first
 - Cloud:
     - controller: "controller"
       workers:
         - set:
       topology_tolerance: "none"
-  strategy: random
+      strategy: random
   followup: fail
 - MQTT:
-    - controller: "ubuntu2204"
+    - controller: "edgecontroller"
       workers:
         - set:
       topology_tolerance: "none"
-  strategy: random
+      strategy: random
   followup: fail
