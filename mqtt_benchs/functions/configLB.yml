@@ -11,14 +11,14 @@
 - Cloud:
     - controller: "controller"
       workers:
-        - set:
+        - set: "belgium"
       topology_tolerance: "none"
       strategy: random
   followup: fail
 - MQTT:
     - controller: "edgecontroller"
       workers:
-        - set:
-      topology_tolerance: "none"
+        - set: "edge"
       strategy: random
+      topology_tolerance: "none"
   followup: fail

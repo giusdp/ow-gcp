@@ -54,7 +54,7 @@ tasks:
 
   mfull:
     vars:
-      HOST: 10.135.0.3
+      HOST: 10.135.0.4
       DBHOST:
         sh: awk 'NR==13 {print $2}' ./ansible/hosts.ini | cut -d'=' -f2
     cmds:
@@ -64,7 +64,7 @@ tasks:
       - task: last-log
   m:
     vars:
-      HOST: 10.135.0.3
+      HOST: 10.135.0.4
       DBHOST:
         sh: awk 'NR==13 {print $2}' ./ansible/hosts.ini | cut -d'=' -f2
     cmds:

@@ -10,7 +10,6 @@ async function insertInDB(host, port, user, pwd, name, vals) {
 		body["docs"].push({ "name": k, "value": vals[k] })
 	}
 
-
 	let r = await axios.post(`http://${user}:${pwd}@${host}:${port}/${name}/_bulk_docs`, body)
 
 	if (r.status != 201) {

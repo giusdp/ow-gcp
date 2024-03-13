@@ -2,7 +2,7 @@ from locust import HttpUser, task, between
 import csv
 
 class QuickStartUser(HttpUser):
-    # wait_time = between(1,1)
+    wait_time = between(10,10)
     request_counter = 0
     max_requests = 100
 
@@ -13,19 +13,17 @@ class QuickStartUser(HttpUser):
             'Authorization': 'Basic MjNiYzQ2YjEtNzFmNi00ZWQ1LThjNTQtODE2YWE0ZjhjNTAyOjEyM3pPM3haQ0xyTU42djJCS0sxZFhZRnBYbFBrY2NPRnFtMTJDZEFzTWdSVTRWck5aOWx5R1ZDR3VNREdJd1A='  # Replace with your authentication token
         }
 
-        payload = {
-                "host": "10.135.0.3",
+        payload1 = {
+                "host": "10.135.0.4",
                 "port": 9999,
-                "db_host": "164.92.174.151",
+                "db_host": "164.90.231.236",
                 "tag": "MQTT"
         }
 
         # invoke mqtt
         response = self.client.post('/api/v1/namespaces/guest/actions/mqtt?blocking=true&result=true', 
-                                    json=payload, 
+                                    json=payload1, 
                                     headers=headers)
-
-        self.request_counter += 1
 
         if response.status_code == 200:
             print("Invocation successful")
@@ -36,15 +34,13 @@ class QuickStartUser(HttpUser):
         self.record_request(response, "mqtt")
 
         # invoke feature extraction
-        payload = {
-                "db_host": "164.92.174.151",
+        payload2 = {
+                "db_host": "164.90.231.236",
                 "tag": "DB"
         }
         response = self.client.post('/api/v1/namespaces/guest/actions/feature_extraction?blocking=true&result=true', 
-                                    json=payload, 
+                                    json=payload2, 
                                     headers=headers)
-
-        self.request_counter += 1
 
         if response.status_code == 200:
             print("Invocation successful")
@@ -55,11 +51,11 @@ class QuickStartUser(HttpUser):
         self.record_request(response, "extraction")
 
         # invoke feature analysis
-        payload = {
+        payload3 = {
                 "tag": "Cloud"
         }
         response = self.client.post('/api/v1/namespaces/guest/actions/feature_analysis?blocking=true&result=true', 
-                                    json=payload, 
+                                    json=payload3, 
                                     headers=headers)
 
         self.request_counter += 1
