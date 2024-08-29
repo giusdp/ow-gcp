@@ -5,14 +5,17 @@
 - name: Clone fl-deploy
   become_user: "{{ ansible_user }}"
   ansible.builtin.git:
-    repo: https://github.com/funlessdev/fl-deploy.git
+    repo: https://github.com/mattrent/fl-deploy.git
     dest: ~/fl-deploy
+    single_branch: yes
+    version: miniSL-integration
 
 - name: Install funless with kubectl
   become_user: "{{ ansible_user }}"
   shell: |
     kubectl apply -f fl-deploy/kind/namespace.yml
     kubectl apply -f fl-deploy/kind/svc-account.yml
+    kubectl apply -f fl-deploy/kind/pubs.yml
     kubectl apply -f fl-deploy/kind/prometheus-cm.yml
     kubectl apply -f fl-deploy/kind/prometheus.yml
     kubectl apply -f fl-deploy/kind/core-secret-postgres-user.yml
@@ -21,4 +24,3 @@
     kubectl apply -f fl-deploy/kind/core-secret-key-base.yml
     kubectl apply -f fl-deploy/kind/core.yml
     kubectl apply -f fl-deploy/kind/worker.yml
-    kubectl apply -f fl-deploy/kind/worker-arm.yml
