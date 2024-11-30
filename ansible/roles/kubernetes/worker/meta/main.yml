@@ -1,5 +1,5 @@
 ---
 dependencies:
-  - role: openvpn/client
-  - role: commons/pre-install 
+  # - role: openvpn/client
+  - role: commons/pre-install
   - role: cri-dockerd

@@ -1,0 +1,98 @@
+---
+- name: Create data-server folder at home
+  file:
+    path: "~/data-server"
+    state: directory
+    mode: 0755
+
+- name: Copy json file to target machine in data-server folder
+  copy:
+    src: large-file.json
+    dest: "~/data-server/large-file.json"
+    mode: 0644
+
+- name: Copy python data-server.py
+  copy:
+    src: data-server.py
+    dest: ~/data-server/data-server.py
+    mode: 0755
+
+- name: Copy Dockerfile
+  copy:
+    src: Dockerfile
+    dest: ~/data-server/Dockerfile
+    mode: 0755
+
+- name: Build Docker image in directory ~/data-server
+  command: docker build -t data-server ~/data-server
+
+- name: Run data-server container exposing port 8080
+  command: docker run -d -p 8080:8080 data-server
+# - name: Pull MongoDB Docker image
+#   ansible.builtin.docker_image:
+#     name: mongo
+#     tag: "6.0"
+#     source: pull
+
+# - name: Run MongoDB container
+#   ansible.builtin.docker_container:
+#     name: mongodb
+#     image: mongo:6.0
+#     state: started
+#     restart_policy: always
+#     ports:
+#       - "27017:27017"
+#     volumes:
+#       - "/tmp/100mb.json:/tmp/100mb.json"
+
+# - name: Get MongoDB apt apt-key
+#   shell: wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+
+# - name: Add MongoDB apt repository
+#   apt_repository:
+#     repo: "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse"
+
+# - name: apt update
+#   apt:
+#     update_cache: yes
+
+# - name: Install MongoDB stuff
+#   apt:
+#     name: mongodb-org
+#     state: present
+
+# # Import the JSON file into MongoDB
+# - name: Import csv data into MongoDB
+#   command: >
+#     docker exec mongodb
+#     mongoimport --host localhost --port 27017
+#     --db  "mydatabase"
+#     --collection "mycollection"
+#     --type json
+
+# - name: Add MongoDB user
+#   block:
+#     # Create a JavaScript file locally on the host
+#     - name: Create JavaScript file for user creation
+#       copy:
+#         dest: /tmp/create_mongo_user.js
+#         content: |
+#           db = db.getSiblingDB("admin");
+#           db.createUser({
+#               user: "mongouser",
+#               pwd: "mongopass",
+#               roles: [
+#                   { role: "readWrite", db: "mydatabase" }
+#               ]
+#           });
+
+#     # Execute the user creation script on the host
+#     - name: Execute user creation script on the host
+#       command: >
+#         mongosh --host localhost --port 27017 admin /tmp/create_mongo_user.js
+
+#     # Clean up the JavaScript file from the host
+#     - name: Remove user creation script from host
+#       file:
+#         path: /tmp/create_mongo_user.js
+#         state: absent

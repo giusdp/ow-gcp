@@ -2,15 +2,12 @@
 control ansible_host=${control_ip} private_ip=${private_control_ip} ansible_user=${user}
 
 [controller]
-controller1 ansible_host=${controller_ip} ansible_user=${user}
-edgecontroller ansible_host=${edgecontroller_ip} ansible_user=root
+eu_controller ansible_host=${eu_controller_ip} ansible_user=${user}
+us_controller ansible_host=${us_controller_ip} ansible_user=${user}
 
 [invokers]
-worker ansible_host=${worker_ip} private_ip=${private_worker_ip} ansible_user=${user}
-edgeworker ansible_host=${edgeworker_ip} ansible_user=root
-
-[broker]
-broker ansible_host=${edgebroker_ip} ansible_user=root
+eu_worker ansible_host=${eu_worker_ip} private_ip=${eu_private_worker_ip} ansible_user=${user}
+us_worker ansible_host=${us_worker_ip} private_ip=${us_private_worker_ip} ansible_user=${user}
 
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3

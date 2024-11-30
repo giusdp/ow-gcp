@@ -4,59 +4,28 @@ terraform {
       source  = "hashicorp/google"
       version = "4.5.0"
     }
-    digitalocean = {
-      source  = "digitalocean/digitalocean"
-      version = "~> 2.0"
-    }
   }
 }
 
 variable "project" {}
 variable "gc_user" {}
 variable "allowed_ip" {}
-variable "do_token" {}
-
-provider "digitalocean" {
-  token = var.do_token
-}
-
-# Create the edge controller on digitalocean
-resource "digitalocean_droplet" "edge_controller" {
-  image    = "ubuntu-20-04-x64"
-  name     = "edgecontroller"
-  region   = "fra1"
-  size     = "s-2vcpu-4gb"
-  ssh_keys = [40852984]
-  tags     = ["edge"]
-}
-
-# Create the edge worker on digitalocean
-resource "digitalocean_droplet" "edge_worker" {
-  image    = "ubuntu-20-04-x64"
-  name     = "edgeworker"
-  region   = "fra1"
-  size     = "s-2vcpu-4gb"
-  ssh_keys = [40852984]
-  tags     = ["edge"]
-}
-
-# Create the edge broker on digitalocean
-resource "digitalocean_droplet" "edge_broker" {
-  image    = "ubuntu-20-04-x64"
-  name     = "broker"
-  region   = "fra1"
-  size     = "s-2vcpu-4gb"
-  ssh_keys = [40852984]
-  tags     = ["edge"]
-}
-
 
 variable "belgium_vms" {
   type = map(string)
 
   default = {
-    controller = "e2-medium"
-    worker     = "e2-medium"
+    eu-controller = "e2-medium"
+    eu-worker     = "e2-medium"
+  }
+}
+
+variable "us_vms" {
+  type = map(string)
+
+  default = {
+    us-controller = "e2-medium"
+    us-worker     = "e2-medium"
   }
 }
 
@@ -111,7 +80,7 @@ resource "google_compute_firewall" "private-ports" {
   source_tags = ["private"]
 }
 
-########### Belgium VMs (with k8s control_plane)
+########### Belgium k8s control_plane
 resource "google_compute_instance" "control_plane" {
   name         = "k8s-control-plane"
   zone         = "europe-west1-b"
@@ -130,10 +99,31 @@ resource "google_compute_instance" "control_plane" {
   tags     = ["private"]
 }
 
+# Belgium VMs (controller and worker)
 resource "google_compute_instance" "europe_vms" {
   for_each     = var.belgium_vms
   name         = each.key
   zone         = "europe-west1-b"
+  machine_type = each.value
+  boot_disk {
+    initialize_params {
+      size  = 80
+      image = "ubuntu-os-cloud/ubuntu-2004-lts"
+    }
+  }
+  network_interface {
+    network = google_compute_network.ow_network.name
+    access_config {}
+  }
+  metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
+  tags     = ["private"]
+}
+
+# US VMs (controller and worker)
+resource "google_compute_instance" "us_vms" {
+  for_each     = var.us_vms
+  name         = each.key
+  zone         = "us-central1-a"
   machine_type = each.value
   boot_disk {
     initialize_params {
@@ -152,15 +142,15 @@ resource "google_compute_instance" "europe_vms" {
 resource "local_file" "hosts" {
   content = templatefile("hosts.tmpl",
     {
-      control_ip         = google_compute_instance.control_plane.network_interface.0.access_config.0.nat_ip
-      private_control_ip = google_compute_instance.control_plane.network_interface.0.network_ip
-      controller_ip      = google_compute_instance.europe_vms["controller"].network_interface.0.access_config.0.nat_ip
-      worker_ip          = google_compute_instance.europe_vms["worker"].network_interface.0.access_config.0.nat_ip
-      private_worker_ip  = google_compute_instance.europe_vms["worker"].network_interface.0.network_ip
-      edgecontroller_ip  = digitalocean_droplet.edge_controller.ipv4_address
-      edgeworker_ip      = digitalocean_droplet.edge_worker.ipv4_address
-      edgebroker_ip      = digitalocean_droplet.edge_broker.ipv4_address
-      user               = var.gc_user
+      control_ip           = google_compute_instance.control_plane.network_interface.0.access_config.0.nat_ip
+      private_control_ip   = google_compute_instance.control_plane.network_interface.0.network_ip
+      eu_controller_ip     = google_compute_instance.europe_vms["eu-controller"].network_interface.0.access_config.0.nat_ip
+      eu_worker_ip         = google_compute_instance.europe_vms["eu-worker"].network_interface.0.access_config.0.nat_ip
+      eu_private_worker_ip = google_compute_instance.europe_vms["eu-worker"].network_interface.0.network_ip
+      us_controller_ip     = google_compute_instance.us_vms["us-controller"].network_interface.0.access_config.0.nat_ip
+      us_worker_ip         = google_compute_instance.us_vms["us-worker"].network_interface.0.access_config.0.nat_ip
+      us_private_worker_ip = google_compute_instance.us_vms["us-worker"].network_interface.0.network_ip
+      user                 = var.gc_user
     }
   )
   filename = "../ansible/hosts.ini"

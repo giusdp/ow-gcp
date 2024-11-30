@@ -1,0 +1,48 @@
+---
+- name: Cluster prep
+  hosts: kube-cluster
+  gather_facts: true
+  become: true
+  roles:
+    - role: docker
+    - role: cri-dockerd
+
+- name: Setup Kubernetes Control Plane
+  hosts: control_plane
+  gather_facts: true
+  become: true
+  roles:
+    - role: kubernetes/control
+
+- name: Setup Kubernetes Workers
+  hosts: workers
+  gather_facts: true
+  become: true
+  roles:
+    - role: kubernetes/worker
+
+- name: Setup NFS storage
+  hosts: control_plane
+  gather_facts: true
+  become: true
+  roles:
+    - role: nfs
+
+- name: Setup OpenWhisk
+  hosts: control_plane
+  gather_facts: true
+  become: true
+  roles:
+    - role: openwhisk
+
+- name: Configure tapp script
+  hosts: control_plane
+  become: true
+  roles:
+    - role: customize-tapp-script
+
+- name: Setup Data Server
+  hosts: eu_worker
+  become: true
+  roles:
+    - role: data-server

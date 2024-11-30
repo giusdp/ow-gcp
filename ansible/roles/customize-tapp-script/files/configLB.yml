@@ -1,0 +1,6 @@
+- data:
+    - controller: "eu-controller"
+      workers:
+        - wrk: "eu-worker"
+      topology_tolerance: "all"
+  followup: default

@@ -1,8 +1,0 @@
-{
-  "name": "mqtt",
-  "main": "index.js",
-  "dependencies": {
-    "mqtt": "^4.3.7",
-    "axios": "^1.6.7"
-  }
-}

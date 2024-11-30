@@ -1,0 +1,29 @@
+---
+- name: Wait for 10 minutes
+  pause:
+    minutes: 10
+
+- name: Find the PVC directory containing configLB.yml
+  find:
+    paths: /var/nfs/kubedata/
+    patterns: configLB.yml
+    recurse: yes
+    file_type: file
+  register: pvc_file
+
+- name: Ensure the PVC file was found
+  fail:
+    msg: "The configLB.yml file was not found in /var/nfs/kubedata/"
+  when: pvc_file.matched == 0
+
+- name: Extract the full path to configLB.yml
+  set_fact:
+    pvc_config_path: "{{ pvc_file.files[0].path }}"
+
+- name: Replace configLB.yml with the new file
+  copy:
+    src: configLB.yml
+    dest: "{{ pvc_config_path }}"
+    owner: root
+    group: root
+    mode: "0644"
