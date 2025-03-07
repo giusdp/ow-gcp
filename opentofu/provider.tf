@@ -13,7 +13,6 @@ variable "allowed_ip" {}
 
 variable "belgium_vms" {
   type = map(string)
-
   default = {
     eu-controller = "e2-medium"
     eu-worker     = "e2-medium"
@@ -22,7 +21,6 @@ variable "belgium_vms" {
 
 variable "us_vms" {
   type = map(string)
-
   default = {
     us-controller = "e2-medium"
     us-worker     = "e2-medium"
@@ -32,15 +30,35 @@ variable "us_vms" {
 provider "google" {
   credentials = file("credentials.json")
   project     = var.project
-  region      = "europe-west1"
-  zone        = "europe-west1-b"
+  # The provider's default region/zone can be overridden in the resources.
+  region = "europe-west1"
+  zone   = "europe-west1-b"
 }
 
+# Create a custom VPC network (global)
 resource "google_compute_network" "ow_network" {
-  name = "terraform-network"
+  name                    = "terraform-network"
+  auto_create_subnetworks = false
 }
 
-resource "google_compute_firewall" "ssh-rule" {
+# Create a subnetwork for europe-west1
+resource "google_compute_subnetwork" "europe_subnet" {
+  name          = "europe-subnet"
+  ip_cidr_range = "10.128.0.0/20"
+  region        = "europe-west1"
+  network       = google_compute_network.ow_network.id
+}
+
+# Create a subnetwork for us-central1
+resource "google_compute_subnetwork" "us_subnet" {
+  name          = "us-subnet"
+  ip_cidr_range = "10.128.16.0/20"
+  region        = "us-central1"
+  network       = google_compute_network.ow_network.id
+}
+
+# Firewall rule to allow SSH from anywhere
+resource "google_compute_firewall" "ssh_rule" {
   name    = "ssh-enabled"
   network = google_compute_network.ow_network.name
   allow {
@@ -50,14 +68,26 @@ resource "google_compute_firewall" "ssh-rule" {
   source_ranges = ["0.0.0.0/0"]
 }
 
-resource "google_compute_firewall" "private-ports" {
-  name    = "private-all-enabled"
+
+# Firewall rule to allow phoenix standard 4000 port to be accessed from anywhere
+resource "google_compute_firewall" "phoenix_rule" {
+  name    = "phoenix-enabled"
+  network = google_compute_network.ow_network.name
+  allow {
+    protocol = "tcp"
+    ports    = ["4000"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+}
+
+# Firewall rule to allow internal traffic between instances
+resource "google_compute_firewall" "internal" {
+  name    = "internal-traffic"
   network = google_compute_network.ow_network.name
   allow {
     protocol = "all"
-    # ports    = ["6443"]
   }
-  source_tags = ["private"]
+  source_ranges = ["10.128.0.0/16"] # Adjust this if needed to cover both subnets.
 }
 
 # Belgium VMs (controller and worker)
@@ -73,11 +103,13 @@ resource "google_compute_instance" "europe_vms" {
     }
   }
   network_interface {
-    network = google_compute_network.ow_network.name
-    access_config {}
+    subnetwork = google_compute_subnetwork.europe_subnet.id
+    access_config {} # For external IP
   }
-  metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
-  tags     = ["private"]
+  metadata = {
+    ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}"
+  }
+  tags = ["private"]
 }
 
 # US VMs (controller and worker)
@@ -93,13 +125,16 @@ resource "google_compute_instance" "us_vms" {
     }
   }
   network_interface {
-    network = google_compute_network.ow_network.name
-    access_config {}
+    subnetwork = google_compute_subnetwork.us_subnet.id
+    access_config {} # For external IP
   }
-  metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
-  tags     = ["private"]
+  metadata = {
+    ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}"
+  }
+  tags = ["private"]
 }
 
+# Generate the hosts file for Ansible, using internal IPs for inter-node communication
 resource "local_file" "hosts" {
   content = templatefile("hosts.tmpl",
     {
