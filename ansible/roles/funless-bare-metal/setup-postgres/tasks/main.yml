@@ -43,25 +43,25 @@
 
     - name: Create database
       postgresql_db:
-        name: funless_db
+        name: funless
         owner: funless
       become: true
       become_user: postgres
 
-    - name: Enable pglogical extension in funless_db
+    - name: Enable pglogical extension in funless
       postgresql_ext:
         name: pglogical
-        db: funless_db
+        db: funless
       become: true
       become_user: postgres
 
 - name: Setup pglogical on eu_controller
   postgresql_query:
-    db: funless_db
+    db: funless
     query: |
       SELECT pglogical.create_node(
         node_name := 'eu_node',
-        dsn := 'host={{ hostvars["eu_controller"]["ansible_default_ipv4"]["address"] }} port=5432 dbname=funless_db user=funless password=funless_password'
+        dsn := 'host={{ hostvars["eu_controller"]["ansible_default_ipv4"]["address"] }} port=5432 dbname=funless user=funless password=funless_password'
       );
       SELECT pglogical.create_replication_set('default_set');
       SELECT pglogical.replication_set_add_all_tables('default_set', ARRAY['public']);
@@ -71,11 +71,11 @@
 
 - name: Setup pglogical on us_controller
   postgresql_query:
-    db: funless_db
+    db: funless
     query: |
       SELECT pglogical.create_node(
         node_name := 'us_node',
-        dsn := 'host={{ hostvars["us_controller"]["ansible_default_ipv4"]["address"] }} port=5432 dbname=funless_db user=funless password=funless_password'
+        dsn := 'host={{ hostvars["us_controller"]["ansible_default_ipv4"]["address"] }} port=5432 dbname=funless user=funless password=funless_password'
       );
       SELECT pglogical.create_replication_set('default_set');
       SELECT pglogical.replication_set_add_all_tables('default_set', ARRAY['public']);
@@ -83,13 +83,36 @@
   become_user: postgres
   when: inventory_hostname == 'us_controller'
 
+- name: Configure PostgreSQL to listen on all interfaces
+  lineinfile:
+    path: /etc/postgresql/16/main/postgresql.conf
+    regexp: "^#?listen_addresses"
+    line: "listen_addresses = '*'"
+  become: true
+
+- name: Allow remote connections in pg_hba.conf
+  blockinfile:
+    path: /etc/postgresql/16/main/pg_hba.conf
+    block: |
+      # Allow connections from other servers for replication
+      host    all             funless         10.128.0.0/16           md5
+      host    replication     funless         10.128.0.0/16           md5
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR PGLOGICAL"
+  become: true
+
+- name: Restart PostgreSQL to apply network configuration
+  service:
+    name: postgresql
+    state: restarted
+  become: true
+
 - name: Create subscription from eu to us
   postgresql_query:
-    db: funless_db
+    db: funless
     query: |
       SELECT pglogical.create_subscription(
         subscription_name := 'subscription_to_us',
-        provider_dsn := 'host={{ hostvars["us_controller"]["ansible_default_ipv4"]["address"] }} port=5432 dbname=funless_db user=funless password=funless_password',
+        provider_dsn := 'host={{ hostvars["us_controller"]["ansible_default_ipv4"]["address"] }} port=5432 dbname=funless user=funless password=funless_password',
         replication_sets := ARRAY['default_set'],
         synchronize_structure := true,
         synchronize_data := true
@@ -100,11 +123,11 @@
 
 - name: Create subscription from us to eu
   postgresql_query:
-    db: funless_db
+    db: funless
     query: |
       SELECT pglogical.create_subscription(
         subscription_name := 'subscription_to_eu',
-        provider_dsn := 'host={{ hostvars["eu_controller"]["ansible_default_ipv4"]["address"] }} port=5432 dbname=funless_db user=funless password=funless_password',
+        provider_dsn := 'host={{ hostvars["eu_controller"]["ansible_default_ipv4"]["address"] }} port=5432 dbname=funless user=funless password=funless_password',
         replication_sets := ARRAY['default_set'],
         synchronize_structure := true,
         synchronize_data := true

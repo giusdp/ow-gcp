@@ -1,41 +1,47 @@
 ---
-# - name: Common setup
-#   hosts: all
-#   gather_facts: true
-#   become: true
-#   tasks:
-#     - name: Update apt cache and install dependencies
-#       apt:
-#         name:
-#           - git
-#           - build-essential
-#           - unzip
-#         state: present
-#         update_cache: yes
+- name: Common setup
+  hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Update apt cache and install dependencies
+      apt:
+        name:
+          - git
+          - build-essential
+          - unzip
+        state: present
+        update_cache: yes
 
-# - name: Install Elixir
-#   hosts: all
-#   gather_facts: true
-#   roles:
-#     - role: elixir
+- name: Install Elixir
+  hosts: all
+  gather_facts: true
+  roles:
+    - role: elixir
 
-# - name: Setup funless
-#   hosts: all
-#   gather_facts: true
-#   roles:
-#     - role: funless-bare-metal/all
+- name: Setup funless repo
+  hosts: all
+  gather_facts: true
+  roles:
+    - role: funless-bare-metal/setup
 
-# - name: Prepare Cores
-#   hosts: cores
-#   gather_facts: true
-#   roles:
-#     - role: funless-bare-metal/cores
-
-- name: Start eu core db
+- name: Install Replicated Postgres
   hosts: cores
   gather_facts: true
   roles:
     - role: funless-bare-metal/setup-postgres
+
+# - name: Install Prometheus
+#   hosts: eu_controller
+#   gather_facts: true
+#   roles:
+#     - role: funless-bare-metal/prometheus
+
+- name: Run Cores
+  hosts: cores
+  gather_facts: true
+  roles:
+    - role: funless-bare-metal/cores
 # - name: Cluster prep
 #   hosts: kube-cluster
 #   gather_facts: true

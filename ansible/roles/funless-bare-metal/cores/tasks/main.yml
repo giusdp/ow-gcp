@@ -13,3 +13,17 @@
   environment:
     PATH: "{{ ansible_env.HOME }}/.elixir-install/installs/elixir/1.18.3-otp-27/bin:{{ ansible_env.HOME }}/.elixir-install/installs/otp/27.1.2/bin:{{ ansible_env.PATH }}"
     MIX_ENV: "prod"
+
+- name: Run funless (Phoenix)
+  ansible.builtin.shell: mix phx.server
+  args:
+    chdir: "{{ ansible_env.HOME }}/funless/core"
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.elixir-install/installs/elixir/1.18.3-otp-27/bin:{{ ansible_env.HOME }}/.elixir-install/installs/otp/27.1.2/bin:{{ ansible_env.PATH }}"
+    MIX_ENV: "prod"
+    PGUSER: "funless"
+    PGPASSWORD: "funless_password"
+    PGDATABASE: "funless"
+    PGHOST: "localhost"
+    PGPORT: "5432"
+    SECRET_KEY_BASE: "secret_key"
