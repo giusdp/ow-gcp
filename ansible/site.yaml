@@ -1,48 +1,85 @@
 ---
-- name: Cluster prep
-  hosts: kube-cluster
+# - name: Common setup
+#   hosts: all
+#   gather_facts: true
+#   become: true
+#   tasks:
+#     - name: Update apt cache and install dependencies
+#       apt:
+#         name:
+#           - git
+#           - build-essential
+#           - unzip
+#         state: present
+#         update_cache: yes
+
+# - name: Install Elixir
+#   hosts: all
+#   gather_facts: true
+#   roles:
+#     - role: elixir
+
+# - name: Setup funless
+#   hosts: all
+#   gather_facts: true
+#   roles:
+#     - role: funless-bare-metal/all
+
+# - name: Prepare Cores
+#   hosts: cores
+#   gather_facts: true
+#   roles:
+#     - role: funless-bare-metal/cores
+
+- name: Start eu core db
+  hosts: cores
   gather_facts: true
-  become: true
   roles:
-    - role: docker
-    - role: cri-dockerd
+    - role: funless-bare-metal/setup-postgres
+# - name: Cluster prep
+#   hosts: kube-cluster
+#   gather_facts: true
+#   become: true
+#   roles:
+#     - role: docker
+#     - role: cri-dockerd
 
-- name: Setup Kubernetes Control Plane
-  hosts: control_plane
-  gather_facts: true
-  become: true
-  roles:
-    - role: kubernetes/control
+# - name: Setup Kubernetes Control Plane
+#   hosts: control_plane
+#   gather_facts: true
+#   become: true
+#   roles:
+#     - role: kubernetes/control
 
-- name: Setup Kubernetes Workers
-  hosts: workers
-  gather_facts: true
-  become: true
-  roles:
-    - role: kubernetes/worker
+# - name: Setup Kubernetes Workers
+#   hosts: workers
+#   gather_facts: true
+#   become: true
+#   roles:
+#     - role: kubernetes/worker
 
-- name: Setup NFS storage
-  hosts: control_plane
-  gather_facts: true
-  become: true
-  roles:
-    - role: nfs
+# - name: Setup NFS storage
+#   hosts: control_plane
+#   gather_facts: true
+#   become: true
+#   roles:
+#     - role: nfs
 
-- name: Setup OpenWhisk
-  hosts: control_plane
-  gather_facts: true
-  become: true
-  roles:
-    - role: openwhisk
+# - name: Setup OpenWhisk
+#   hosts: control_plane
+#   gather_facts: true
+#   become: true
+#   roles:
+#     - role: openwhisk
 
-- name: Configure tapp script
-  hosts: control_plane
-  become: true
-  roles:
-    - role: customize-tapp-script
+# - name: Configure tapp script
+#   hosts: control_plane
+#   become: true
+#   roles:
+#     - role: customize-tapp-script
 
-- name: Setup Data Server
-  hosts: eu_worker
-  become: true
-  roles:
-    - role: data-server
+# - name: Setup Data Server
+#   hosts: eu_worker
+#   become: true
+#   roles:
+#     - role: data-server

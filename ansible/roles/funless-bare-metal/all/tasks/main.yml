@@ -1,0 +1,10 @@
+---
+- name: Remove existing funless directory
+  ansible.builtin.file:
+    path: funless
+    state: absent
+
+- name: Clone Funless repository
+  ansible.builtin.git:
+    repo: https://github.com/funlessdev/funless.git
+    dest: "{{ ansible_env.HOME }}/funless"

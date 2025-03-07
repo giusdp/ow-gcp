@@ -1,0 +1,79 @@
+- name: Update apt cache and install dependencies for Erlang and asdf
+  apt:
+    name:
+      - git
+      - curl
+      - build-essential
+      - libssl-dev
+      - automake
+      - unzip
+    state: present
+    update_cache: yes
+
+- name: Download asdf release archive (v0.16.5)
+  ansible.builtin.get_url:
+    url: "https://github.com/asdf-vm/asdf/releases/download/v0.16.5/asdf-v0.16.5-linux-amd64.tar.gz"
+    dest: "/tmp/asdf-v0.16.5-linux-amd64.tar.gz"
+    mode: "0644"
+
+- name: Ensure extraction directory exists
+  ansible.builtin.file:
+    path: "/tmp/asdf_extracted"
+    state: directory
+    mode: "0755"
+
+- name: Extract asdf archive
+  ansible.builtin.unarchive:
+    src: "/tmp/asdf-v0.16.5-linux-amd64.tar.gz"
+    dest: "/tmp/asdf_extracted"
+    remote_src: yes
+    creates: "/tmp/asdf_extracted/asdf"
+
+- name: Copy asdf binary to /usr/local/bin
+  ansible.builtin.copy:
+    src: "/tmp/asdf_extracted/asdf"
+    dest: "/usr/local/bin/asdf"
+    mode: "0755"
+    remote_src: yes
+  become: true
+
+- name: Ensure asdf is initialized in shell
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    line: ". /usr/local/bin/asdf"
+    create: yes
+
+- name: Add asdf plugin for Erlang
+  shell: "asdf plugin add erlang https://github.com/asdf-vm/asdf-erlang.git"
+  become: false
+  ignore_errors: true
+
+- name: Add asdf plugin for Elixir
+  shell: "asdf plugin add elixir https://github.com/asdf-vm/asdf-elixir.git"
+  become: false
+  ignore_errors: true
+
+- name: Install Erlang via asdf (version 27.1.1)
+  shell: "asdf install erlang 27.1.1"
+  become: false
+
+- name: Install Elixir via asdf (version 1.18.3-otp-27)
+  shell: "asdf install elixir 1.18.3-otp-27"
+  become: false
+
+- name: Check that Elixir is installed
+  shell: "elixir --version"
+  register: elixir_version_output
+  become: false
+
+- name: Display Elixir version
+  ansible.builtin.debug:
+    var: elixir_version_output.stdout
+
+- name: Set global Erlang version to 27.1.1
+  shell: "asdf global erlang 27.1.1"
+  become: false
+
+- name: Set global Elixir version to 1.18.3-otp-27
+  shell: "asdf global elixir 1.18.3-otp-27"
+  become: false

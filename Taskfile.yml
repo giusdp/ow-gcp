@@ -20,7 +20,7 @@ tasks:
     cmds:
       - |
         cd ansible
-        ansible-playbook cluster.yaml
+        ansible-playbook site.yaml
 
   wsk-setup:
     cmds:

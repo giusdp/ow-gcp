@@ -50,26 +50,6 @@ resource "google_compute_firewall" "ssh-rule" {
   source_ranges = ["0.0.0.0/0"]
 }
 
-resource "google_compute_firewall" "ow-invoke-rule" {
-  name    = "ow-invoke-enabled"
-  network = google_compute_network.ow_network.name
-  allow {
-    protocol = "tcp"
-    ports    = ["31001"]
-  }
-  source_ranges = ["${var.allowed_ip}"]
-}
-
-resource "google_compute_firewall" "openvpn-rule" {
-  name    = "openvpn-server-allow"
-  network = google_compute_network.ow_network.name
-  allow {
-    protocol = "tcp"
-    ports    = ["1194"]
-  }
-  source_ranges = ["${var.allowed_ip}"]
-}
-
 resource "google_compute_firewall" "private-ports" {
   name    = "private-all-enabled"
   network = google_compute_network.ow_network.name
@@ -78,25 +58,6 @@ resource "google_compute_firewall" "private-ports" {
     # ports    = ["6443"]
   }
   source_tags = ["private"]
-}
-
-########### Belgium k8s control_plane
-resource "google_compute_instance" "control_plane" {
-  name         = "k8s-control-plane"
-  zone         = "europe-west1-b"
-  machine_type = "e2-medium"
-  boot_disk {
-    initialize_params {
-      size  = 20
-      image = "ubuntu-os-cloud/ubuntu-2004-lts"
-    }
-  }
-  network_interface {
-    network = google_compute_network.ow_network.name
-    access_config {}
-  }
-  metadata = { ssh-keys = "${var.gc_user}:${file("../ow-gcp-key.pub")}" }
-  tags     = ["private"]
 }
 
 # Belgium VMs (controller and worker)
@@ -108,7 +69,7 @@ resource "google_compute_instance" "europe_vms" {
   boot_disk {
     initialize_params {
       size  = 80
-      image = "ubuntu-os-cloud/ubuntu-2004-lts"
+      image = "ubuntu-os-cloud/ubuntu-2404-lts-amd64"
     }
   }
   network_interface {
@@ -128,7 +89,7 @@ resource "google_compute_instance" "us_vms" {
   boot_disk {
     initialize_params {
       size  = 40
-      image = "ubuntu-os-cloud/ubuntu-2004-lts"
+      image = "ubuntu-os-cloud/ubuntu-2404-lts-amd64"
     }
   }
   network_interface {
@@ -142,8 +103,6 @@ resource "google_compute_instance" "us_vms" {
 resource "local_file" "hosts" {
   content = templatefile("hosts.tmpl",
     {
-      control_ip           = google_compute_instance.control_plane.network_interface.0.access_config.0.nat_ip
-      private_control_ip   = google_compute_instance.control_plane.network_interface.0.network_ip
       eu_controller_ip     = google_compute_instance.europe_vms["eu-controller"].network_interface.0.access_config.0.nat_ip
       eu_worker_ip         = google_compute_instance.europe_vms["eu-worker"].network_interface.0.access_config.0.nat_ip
       eu_private_worker_ip = google_compute_instance.europe_vms["eu-worker"].network_interface.0.network_ip
@@ -154,13 +113,4 @@ resource "local_file" "hosts" {
     }
   )
   filename = "../ansible/hosts.ini"
-}
-
-resource "local_file" "mycluster" {
-  content = templatefile("mycluster.tmpl",
-    {
-      control_ip = google_compute_instance.control_plane.network_interface.0.access_config.0.nat_ip
-    }
-  )
-  filename = "../ansible/mycluster.yaml"
 }

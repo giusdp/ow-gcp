@@ -1,0 +1,32 @@
+# - name: Update apt cache and install dependencies for Erlang and asdf
+#   apt:
+#     name:
+#       - git
+#       - curl
+#       - build-essential
+#       - libssl-dev
+#       - automake
+#       - unzip
+#     state: present
+#     update_cache: yes
+
+- name: Download Elixir installation script
+  get_url:
+    url: https://elixir-lang.org/install.sh
+    dest: "{{ ansible_env.HOME }}/install.sh"
+    mode: "0755"
+
+- name: Run Elixir installation script
+  shell: |
+    sh {{ ansible_env.HOME }}/install.sh elixir@1.18.3 otp@27.1.2
+  args:
+    creates: "{{ ansible_env.HOME }}/.elixir-install/installs/elixir/1.18.3-otp-27/bin/elixir"
+
+- name: Update bash rc with exports
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    line: "{{ item }}"
+    state: present
+  with_items:
+    - "export PATH=$HOME/.elixir-install/installs/otp/27.1.2/bin:$PATH"
+    - "export PATH=$HOME/.elixir-install/installs/elixir/1.18.3-otp-27/bin:$PATH"

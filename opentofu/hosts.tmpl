@@ -1,7 +1,4 @@
-[control_plane]
-control ansible_host=${control_ip} private_ip=${private_control_ip} ansible_user=${user}
-
-[controller]
+[cores]
 eu_controller ansible_host=${eu_controller_ip} ansible_user=${user}
 us_controller ansible_host=${us_controller_ip} ansible_user=${user}
 
@@ -12,11 +9,6 @@ us_worker ansible_host=${us_worker_ip} private_ip=${us_private_worker_ip} ansibl
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3
 
-[kube-cluster:children]
-control_plane
-controller
-invokers
-
 [workers:children]
-controller
+cores
 invokers 

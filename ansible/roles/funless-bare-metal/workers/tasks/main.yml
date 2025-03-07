@@ -1,0 +1,6 @@
+---
+- name: compile worker
+  ansible.builtin.shell: |
+    cd funless/worker
+    mix deps.get
+    mix compile
