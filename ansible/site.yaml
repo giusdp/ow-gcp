@@ -42,6 +42,12 @@
   gather_facts: true
   roles:
     - role: funless-bare-metal/cores
+
+- name: Run Workers
+  hosts: workers
+  gather_facts: true
+  roles:
+    - role: funless-bare-metal/workers
 # - name: Cluster prep
 #   hosts: kube-cluster
 #   gather_facts: true
