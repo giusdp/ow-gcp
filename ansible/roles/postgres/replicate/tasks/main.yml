@@ -5,61 +5,49 @@
          if inventory_hostname == 'eu_controller'
          else hostvars['eu_controller'].ansible_default_ipv4.address }}
 
-- name: Ensure publication for funless database exists
+- name: Create publication for funless database
   become: true
   become_user: postgres
-  shell: |
-    psql -d funless -c "DO \$\$ 
-      BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'funless_pub') THEN
-          CREATE PUBLICATION funless_pub FOR ALL TABLES;
-        END IF;
-      END
-    \$\$;"
-  changed_when: false
+  postgresql_query:
+    db: funless
+    query: CREATE PUBLICATION funless_pub FOR ALL TABLES;
 
-- name: Ensure publication for subjects database exists
+- name: Create publication for subjects database
   become: true
   become_user: postgres
-  shell: |
-    psql -d subjects -c "DO \$\$ 
-      BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'subjects_pub') THEN
-          CREATE PUBLICATION subjects_pub FOR ALL TABLES;
-        END IF;
-      END
-    \$\$;"
-  changed_when: false
+  postgresql_query:
+    db: subjects
+    query: CREATE PUBLICATION subjects_pub FOR ALL TABLES;
+- name: Create replication slot for funless database on source
+  become: true
+  become_user: postgres
+  ansible.builtin.shell: |
+    psql -d funless -c "SELECT pg_create_logical_replication_slot('funless_slot', 'pgoutput');"
 
-- name: Check if subscription funless_sub exists in funless database
+- name: Create replication slot for subjects database on source
   become: true
   become_user: postgres
-  shell: 'psql -d funless -tAc "SELECT count(*) FROM pg_subscription WHERE subname = ''funless_sub''"'
-  register: funless_sub_count
+  ansible.builtin.shell: |
+    psql -d subjects -c "SELECT pg_create_logical_replication_slot('subjects_slot', 'pgoutput');"
 
-- name: Create subscription for funless database if not exists
+- name: Create subscription for funless database with explicit slot
   become: true
   become_user: postgres
-  shell: |
-    psql -d funless -c "CREATE SUBSCRIPTION funless_sub
-      CONNECTION 'host={{ peer_ip }} port=5432 user=funless password=postgres dbname=funless'
-      PUBLICATION funless_pub"
-  when: funless_sub_count.stdout | trim == "0"
+  ansible.builtin.shell: |
+    psql -d funless -c "CREATE SUBSCRIPTION funless_sub 
+      CONNECTION 'host={{ peer_ip }} port=5432 dbname=funless user=funless password=postgres' 
+      PUBLICATION funless_pub 
+      WITH (create_slot = false, slot_name = 'funless_slot');"
 
-- name: Check if subscription subjects_sub exists in subjects database
+- name: Create subscription for subjects database with explicit slot
   become: true
   become_user: postgres
-  shell: 'psql -d subjects -tAc "SELECT count(*) FROM pg_subscription WHERE subname = ''subjects_sub''"'
-  register: subjects_sub_count
+  ansible.builtin.shell: |
+    psql -d subjects -c "CREATE SUBSCRIPTION subjects_sub 
+      CONNECTION 'host={{ peer_ip }} port=5432 dbname=subjects user=funless password=postgres' 
+      PUBLICATION subjects_pub 
+      WITH (create_slot = false, slot_name = 'subjects_slot');"
 
-- name: Create subscription for subjects database if not exists
-  become: true
-  become_user: postgres
-  shell: |
-    psql -d subjects -c "CREATE SUBSCRIPTION subjects_sub
-      CONNECTION 'host={{ peer_ip }} port=5432 user=funless password=postgres dbname=subjects'
-      PUBLICATION subjects_pub"
-  when: subjects_sub_count.stdout | trim == "0"
 # - name: Run mix ecto.seed (only on EU node)
 #   shell: "mix ecto.seed"
 #   args:
