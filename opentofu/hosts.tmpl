@@ -3,8 +3,8 @@ eu_controller ansible_host=${eu_controller_ip} ansible_user=${user}
 us_controller ansible_host=${us_controller_ip} ansible_user=${user}
 
 [workers]
-eu_worker ansible_host=${eu_worker_ip} private_ip=${eu_private_worker_ip} ansible_user=${user}
-us_worker ansible_host=${us_worker_ip} private_ip=${us_private_worker_ip} ansible_user=${user}
+eu_worker ansible_host=${eu_worker_ip} ansible_user=${user}
+us_worker ansible_host=${us_worker_ip} ansible_user=${user}
 
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3

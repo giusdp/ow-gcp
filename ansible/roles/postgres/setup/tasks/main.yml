@@ -1,0 +1,107 @@
+- name: Install PostgreSQL
+  apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+  become: true
+
+- name: Configure PostgreSQL to listen on all interfaces
+  lineinfile:
+    path: /etc/postgresql/16/main/postgresql.conf
+    regexp: "^#?listen_addresses"
+    line: "listen_addresses = '*'"
+  become: true
+
+- name: Configure PostgreSQL wal_level to logical
+  lineinfile:
+    path: /etc/postgresql/16/main/postgresql.conf
+    regexp: "^#?wal_level"
+    line: "wal_level = logical"
+  become: true
+
+- name: Allow remote connections in pg_hba.conf
+  blockinfile:
+    path: /etc/postgresql/16/main/pg_hba.conf
+    block: |
+      # Allow connections from other servers for replication
+      host    all     all         10.128.0.0/16           trust
+      host    all     all         10.128.16.0/16          trust
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR PGLOGICAL"
+  become: true
+
+- name: Allow replication connections in pg_hba.conf
+  blockinfile:
+    path: /etc/postgresql/16/main/pg_hba.conf
+    block: |
+      # Allow replication connections from all servers in the private network
+      host    replication     all             10.128.0.0/16           trust
+      host    replication     all             10.128.16.0/16          trust
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR REPLICATION"
+  become: true
+
+- name: Create app user and database
+  block:
+    - name: Create app user
+      postgresql_user:
+        name: funless
+        password: postgres
+        role_attr_flags: SUPERUSER,LOGIN
+      become: true
+      become_user: postgres
+
+    - name: Create database
+      postgresql_db:
+        name: funless
+        owner: funless
+      become: true
+      become_user: postgres
+
+    - name: Create subjects database
+      postgresql_db:
+        name: subjects
+        owner: funless
+      become: true
+      become_user: postgres
+
+# - name: Configure postgresql.conf for PostgreSQL 16
+#   lineinfile:
+#     path: /etc/postgresql/16/main/postgresql.conf
+#     regexp: "{{ item.regexp }}"
+#     line: "{{ item.line }}"
+#   loop:
+#     - {
+#         regexp: "^#?shared_preload_libraries",
+#         line: "shared_preload_libraries = 'pglogical'",
+#       }
+#     - { regexp: "^#?wal_level", line: "wal_level = logical" }
+#     - { regexp: "^#?max_worker_processes", line: "max_worker_processes = 10" }
+#     - { regexp: "^#?max_replication_slots", line: "max_replication_slots = 10" }
+#     - { regexp: "^#?max_wal_senders", line: "max_wal_senders = 10" }
+#   become: true
+
+# - name: Restart PostgreSQL to load new shared_preload_libraries
+#   service:
+#     name: postgresql
+#     state: restarted
+#   become: true
+
+# - name: Enable pglogical extension in funless
+#   postgresql_ext:
+#     name: pglogical
+#     db: funless
+#   become: true
+#   become_user: postgres
+
+# - name: Enable pglogical extension in subjects
+#   postgresql_ext:
+#     name: pglogical
+#     db: subjects
+#   become: true
+#   become_user: postgres
+
+- name: Restart PostgreSQL to apply network configuration
+  service:
+    name: postgresql
+    state: restarted
+  become: true

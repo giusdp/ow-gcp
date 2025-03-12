@@ -15,7 +15,7 @@ variable "belgium_vms" {
   type = map(string)
   default = {
     eu-controller = "e2-medium"
-    eu-worker     = "e2-medium"
+    # eu-worker     = "e2-medium"
   }
 }
 
@@ -23,7 +23,7 @@ variable "us_vms" {
   type = map(string)
   default = {
     us-controller = "e2-medium"
-    us-worker     = "e2-medium"
+    # us-worker     = "e2-medium"
   }
 }
 
@@ -138,13 +138,13 @@ resource "google_compute_instance" "us_vms" {
 resource "local_file" "hosts" {
   content = templatefile("hosts.tmpl",
     {
-      eu_controller_ip     = google_compute_instance.europe_vms["eu-controller"].network_interface.0.access_config.0.nat_ip
-      eu_worker_ip         = google_compute_instance.europe_vms["eu-worker"].network_interface.0.access_config.0.nat_ip
-      eu_private_worker_ip = google_compute_instance.europe_vms["eu-worker"].network_interface.0.network_ip
-      us_controller_ip     = google_compute_instance.us_vms["us-controller"].network_interface.0.access_config.0.nat_ip
-      us_worker_ip         = google_compute_instance.us_vms["us-worker"].network_interface.0.access_config.0.nat_ip
-      us_private_worker_ip = google_compute_instance.us_vms["us-worker"].network_interface.0.network_ip
-      user                 = var.gc_user
+      eu_controller_ip = google_compute_instance.europe_vms["eu-controller"].network_interface.0.access_config.0.nat_ip
+      # eu_worker_ip         = google_compute_instance.europe_vms["eu-worker"].network_interface.0.access_config.0.nat_ip
+      # eu_private_worker_ip = google_compute_instance.europe_vms["eu-worker"].network_interface.0.network_ip
+      us_controller_ip = google_compute_instance.us_vms["us-controller"].network_interface.0.access_config.0.nat_ip
+      # us_worker_ip         = google_compute_instance.us_vms["us-worker"].network_interface.0.access_config.0.nat_ip
+      # us_private_worker_ip = google_compute_instance.us_vms["us-worker"].network_interface.0.network_ip
+      user = var.gc_user
     }
   )
   filename = "../ansible/hosts.ini"

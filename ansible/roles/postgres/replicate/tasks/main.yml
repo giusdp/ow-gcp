@@ -1,0 +1,74 @@
+- name: Set peer IP for replication
+  set_fact:
+    peer_ip: >-
+      {{ hostvars['us_controller'].ansible_default_ipv4.address
+         if inventory_hostname == 'eu_controller'
+         else hostvars['eu_controller'].ansible_default_ipv4.address }}
+
+- name: Ensure publication for funless database exists
+  become: true
+  become_user: postgres
+  shell: |
+    psql -d funless -c "DO \$\$ 
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'funless_pub') THEN
+          CREATE PUBLICATION funless_pub FOR ALL TABLES;
+        END IF;
+      END
+    \$\$;"
+  changed_when: false
+
+- name: Ensure publication for subjects database exists
+  become: true
+  become_user: postgres
+  shell: |
+    psql -d subjects -c "DO \$\$ 
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'subjects_pub') THEN
+          CREATE PUBLICATION subjects_pub FOR ALL TABLES;
+        END IF;
+      END
+    \$\$;"
+  changed_when: false
+
+- name: Check if subscription funless_sub exists in funless database
+  become: true
+  become_user: postgres
+  shell: 'psql -d funless -tAc "SELECT count(*) FROM pg_subscription WHERE subname = ''funless_sub''"'
+  register: funless_sub_count
+
+- name: Create subscription for funless database if not exists
+  become: true
+  become_user: postgres
+  shell: |
+    psql -d funless -c "CREATE SUBSCRIPTION funless_sub
+      CONNECTION 'host={{ peer_ip }} port=5432 user=funless password=postgres dbname=funless'
+      PUBLICATION funless_pub"
+  when: funless_sub_count.stdout | trim == "0"
+
+- name: Check if subscription subjects_sub exists in subjects database
+  become: true
+  become_user: postgres
+  shell: 'psql -d subjects -tAc "SELECT count(*) FROM pg_subscription WHERE subname = ''subjects_sub''"'
+  register: subjects_sub_count
+
+- name: Create subscription for subjects database if not exists
+  become: true
+  become_user: postgres
+  shell: |
+    psql -d subjects -c "CREATE SUBSCRIPTION subjects_sub
+      CONNECTION 'host={{ peer_ip }} port=5432 user=funless password=postgres dbname=subjects'
+      PUBLICATION subjects_pub"
+  when: subjects_sub_count.stdout | trim == "0"
+# - name: Run mix ecto.seed (only on EU node)
+#   shell: "mix ecto.seed"
+#   args:
+#     chdir: "{{ ansible_env.HOME }}/funless/core"
+#   environment:
+#     PATH: "{{ ansible_env.HOME }}/.elixir-install/installs/elixir/1.18.3-otp-27/bin:{{ ansible_env.HOME }}/.elixir-install/installs/otp/27.1.2/bin:{{ ansible_env.PATH }}"
+#     MIX_ENV: "prod"
+#     SECRET_KEY_BASE: "secret_key"
+#     PGUSER: funless
+#     PGPASSWORD: funless_password
+#     PGHOST: "{{ ansible_default_ipv4.address }}"
+#   when: inventory_hostname == 'eu_controller'

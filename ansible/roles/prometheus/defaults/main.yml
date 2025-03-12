@@ -1,0 +1,9 @@
+---
+prometheus_version: " 2.53.3"
+prometheus_user: prometheus
+prometheus_group: prometheus
+prometheus_install_dir: /opt/prometheus
+prometheus_config_dir: /etc/prometheus
+prometheus_data_dir: /opt/prometheus/data
+prometheus_download_url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+prometheus_extracted_dir: "prometheus-{{ prometheus_version }}.linux-amd64"

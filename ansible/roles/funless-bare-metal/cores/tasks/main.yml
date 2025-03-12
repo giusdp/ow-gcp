@@ -13,16 +13,41 @@
   environment:
     PATH: "{{ ansible_env.HOME }}/.elixir-install/installs/elixir/1.18.3-otp-27/bin:{{ ansible_env.HOME }}/.elixir-install/installs/otp/27.1.2/bin:{{ ansible_env.PATH }}"
     MIX_ENV: "prod"
-# - name: Run funless (Phoenix)
-#   ansible.builtin.shell: mix phx.server
-#   args:
-#     chdir: "{{ ansible_env.HOME }}/funless/core"
-#   environment:
-#     PATH: "{{ ansible_env.HOME }}/.elixir-install/installs/elixir/1.18.3-otp-27/bin:{{ ansible_env.HOME }}/.elixir-install/installs/otp/27.1.2/bin:{{ ansible_env.PATH }}"
-#     MIX_ENV: "prod"
-#     PGUSER: "funless"
-#     PGPASSWORD: "funless_password"
-#     PGDATABASE: "funless"
-#     PGHOST: "localhost"
-#     PGPORT: "5432"
-#     SECRET_KEY_BASE: "secret_key"
+
+- name: Migrate funless database
+  shell: "mix ecto.migrate"
+  args:
+    chdir: "{{ ansible_env.HOME }}/funless/core"
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.elixir-install/installs/elixir/1.18.3-otp-27/bin:{{ ansible_env.HOME }}/.elixir-install/installs/otp/27.1.2/bin:{{ ansible_env.PATH }}"
+    MIX_ENV: "prod"
+    SECRET_KEY_BASE: "secret_key"
+    PGUSER: funless
+    PGPASSWORD: postgres
+    PGHOST: "{{ ansible_default_ipv4.address }}"
+
+- name: Migrate subjects database
+  shell: "mix ecto.migrate -r Core.SubjectsRepo"
+  args:
+    chdir: "{{ ansible_env.HOME }}/funless/core"
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.elixir-install/installs/elixir/1.18.3-otp-27/bin:{{ ansible_env.HOME }}/.elixir-install/installs/otp/27.1.2/bin:{{ ansible_env.PATH }}"
+    MIX_ENV: "prod"
+    SECRET_KEY_BASE: "secret_key"
+    PGUSER: funless
+    PGPASSWORD: postgres
+    PGHOST: "{{ ansible_default_ipv4.address }}"
+
+- name: Create startup script for core
+  copy:
+    dest: "{{ ansible_env.HOME }}/funless/core/start_core.sh"
+    content: |
+      #!/bin/bash
+      export PGUSER=funless
+      export PGPASSWORD=postgres
+      export PGHOST={{ ansible_default_ipv4.address }}
+      export MIX_ENV=prod
+      export SECRET_KEY_BASE=secret_key
+      export PROMETHEUS_HOST={{ hostvars['eu_controller']['ansible_default_ipv4']['address'] }}
+      iex --name {% if inventory_hostname == 'eu_controller' %}eucore@{% else %}uscore@{% endif %}{{ ansible_default_ipv4.address }} --cookie mycookie -S mix phx.server
+    mode: "0755"
