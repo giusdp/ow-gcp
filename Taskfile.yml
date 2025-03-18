@@ -18,6 +18,20 @@ tasks:
         echo $HOST
         ssh -i ow-gcp-key depalma_gsp@${HOST}
 
+  euworker:
+    cmds:
+      - |
+        HOST="$(awk 'NR==6 {print $2}' ./ansible/hosts.ini | cut -d'=' -f2)"
+        echo $HOST
+        ssh -i ow-gcp-key depalma_gsp@${HOST}
+
+  usworker:
+    cmds:
+      - |
+        HOST="$(awk 'NR==7 {print $2}' ./ansible/hosts.ini | cut -d'=' -f2)"
+        echo $HOST
+        ssh -i ow-gcp-key depalma_gsp@${HOST}
+
   setup:
     - task: create
     - sleep 30

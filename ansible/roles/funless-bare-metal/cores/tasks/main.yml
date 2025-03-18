@@ -51,3 +51,10 @@
       export PROMETHEUS_HOST={{ hostvars['eu_controller']['ansible_default_ipv4']['address'] }}
       iex --name {% if inventory_hostname == 'eu_controller' %}eucore@{% else %}uscore@{% endif %}{{ ansible_default_ipv4.address }} --cookie mycookie -S mix phx.server
     mode: "0755"
+
+- name: Mix release
+  shell: "mix release"
+  args:
+    chdir: "{{ ansible_env.HOME }}/funless/core"
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.elixir-install/installs/elixir/1.18.3-otp-27/bin:{{ ansible_env.HOME }}/.elixir-install/installs/otp/27.1.2/bin:{{ ansible_env.PATH }}"

@@ -15,7 +15,7 @@ variable "belgium_vms" {
   type = map(string)
   default = {
     eu-controller = "e2-medium"
-    # eu-worker     = "e2-medium"
+    eu-worker     = "e2-medium"
   }
 }
 
@@ -23,7 +23,7 @@ variable "us_vms" {
   type = map(string)
   default = {
     us-controller = "e2-medium"
-    # us-worker     = "e2-medium"
+    us-worker     = "e2-medium"
   }
 }
 
@@ -69,13 +69,13 @@ resource "google_compute_firewall" "ssh_rule" {
 }
 
 
-# Firewall rule to allow phoenix standard 4000 port to be accessed from anywhere
+# Firewall rule to allow some ports to be accessed from anywhere
 resource "google_compute_firewall" "phoenix_rule" {
   name    = "phoenix-enabled"
   network = google_compute_network.ow_network.name
   allow {
     protocol = "tcp"
-    ports    = ["4000"]
+    ports    = ["4000", "4021", "8089", "9090"]
   }
   source_ranges = ["0.0.0.0/0"]
 }
@@ -139,10 +139,10 @@ resource "local_file" "hosts" {
   content = templatefile("hosts.tmpl",
     {
       eu_controller_ip = google_compute_instance.europe_vms["eu-controller"].network_interface.0.access_config.0.nat_ip
-      # eu_worker_ip         = google_compute_instance.europe_vms["eu-worker"].network_interface.0.access_config.0.nat_ip
-      # eu_private_worker_ip = google_compute_instance.europe_vms["eu-worker"].network_interface.0.network_ip
+      eu_worker_ip     = google_compute_instance.europe_vms["eu-worker"].network_interface.0.access_config.0.nat_ip
       us_controller_ip = google_compute_instance.us_vms["us-controller"].network_interface.0.access_config.0.nat_ip
-      # us_worker_ip         = google_compute_instance.us_vms["us-worker"].network_interface.0.access_config.0.nat_ip
+      us_worker_ip     = google_compute_instance.us_vms["us-worker"].network_interface.0.access_config.0.nat_ip
+      # eu_private_worker_ip = google_compute_instance.europe_vms["eu-worker"].network_interface.0.network_ip
       # us_private_worker_ip = google_compute_instance.us_vms["us-worker"].network_interface.0.network_ip
       user = var.gc_user
     }

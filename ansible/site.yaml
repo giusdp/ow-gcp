@@ -1,102 +1,63 @@
 ---
-- name: Common setup
-  hosts: all
-  gather_facts: true
+# - name: Common setup
+#   hosts: all
+#   gather_facts: true
+#   become: true
+#   tasks:
+#     - name: Update apt cache and install dependencies
+#       apt:
+#         name:
+#           - git
+#           - build-essential
+#           - unzip
+#         state: present
+#         update_cache: yes
+
+# - name: Install Elixir
+#   hosts: all
+#   gather_facts: true
+#   roles:
+#     - role: elixir
+
+# - name: Install Postgres
+#   hosts: cores
+#   gather_facts: true
+#   roles:
+#     - role: postgres/setup
+
+# - name: Setup funless repo
+#   hosts: all
+#   gather_facts: true
+#   roles:
+#     - role: funless-bare-metal/setup
+
+# - name: Setup cores
+#   hosts: cores
+#   gather_facts: true
+#   roles:
+#     - role: funless-bare-metal/cores
+
+# - name: Replicate postgres
+#   hosts: cores
+#   gather_facts: true
+#   roles:
+#     - role: postgres/replicate
+
+- name: Install Prometheus
   become: true
-  tasks:
-    - name: Update apt cache and install dependencies
-      apt:
-        name:
-          - git
-          - build-essential
-          - unzip
-        state: present
-        update_cache: yes
-
-- name: Install Elixir
-  hosts: all
+  hosts: eu_controller
   gather_facts: true
   roles:
-    - role: elixir
+    - role: prometheus
 
-- name: Install Postgres
+- name: Setup Workers
+  hosts: workers
+  gather_facts: true
+  roles:
+    - role: funless-bare-metal/workers
+
+- name: Deploy Locust on Controllers
   hosts: cores
-  gather_facts: true
+  become: true
   roles:
-    - role: postgres/setup
-
-- name: Setup funless repo
-  hosts: all
-  gather_facts: true
-  roles:
-    - role: funless-bare-metal/setup
-
-- name: Setup cores
-  hosts: cores
-  gather_facts: true
-  roles:
-    - role: funless-bare-metal/cores
-
-- name: Replicate postgres
-  hosts: cores
-  gather_facts: true
-  roles:
-    - role: postgres/replicate
-
-    # # - name: Install Prometheus
-# #   hosts: eu_controller
-# #   gather_facts: true
-# #   roles:
-# #     - role: funless-bare-metal/prometheus
-# - name: Run Workers
-#   hosts: workers
-#   gather_facts: true
-#   roles:
-#     - role: funless-bare-metal/workers
-# - name: Cluster prep
-#   hosts: kube-cluster
-#   gather_facts: true
-#   become: true
-#   roles:
-#     - role: docker
-#     - role: cri-dockerd
-
-# - name: Setup Kubernetes Control Plane
-#   hosts: control_plane
-#   gather_facts: true
-#   become: true
-#   roles:
-#     - role: kubernetes/control
-
-# - name: Setup Kubernetes Workers
-#   hosts: workers
-#   gather_facts: true
-#   become: true
-#   roles:
-#     - role: kubernetes/worker
-
-# - name: Setup NFS storage
-#   hosts: control_plane
-#   gather_facts: true
-#   become: true
-#   roles:
-#     - role: nfs
-
-# - name: Setup OpenWhisk
-#   hosts: control_plane
-#   gather_facts: true
-#   become: true
-#   roles:
-#     - role: openwhisk
-
-# - name: Configure tapp script
-#   hosts: control_plane
-#   become: true
-#   roles:
-#     - role: customize-tapp-script
-
-# - name: Setup Data Server
-#   hosts: eu_worker
-#   become: true
-#   roles:
-#     - role: data-server
+    - locust

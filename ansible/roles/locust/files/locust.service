@@ -1,0 +1,12 @@
+[Unit]
+Description=Locust Load Testing
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/locust
+ExecStart=/opt/locust/venv/bin/locust -f /opt/locust/locustfile.py --host=http://localhost:4000 --web-port 8089
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,96 +1,90 @@
 ---
-- name: Ensure prometheus group exists
-  group:
-    name: "{{ prometheus_group }}"
-    state: present
-  become: true
+- name: Gather IP addresses for Prometheus scrape configuration
+  ansible.builtin.set_fact:
+    prometheus_targets:
+      - job_name: "prometheus"
+        static_configs:
+          - targets: ["localhost:9090"]
+      - job_name: "funless"
+        static_configs:
+          - targets: "{{
+              (groups.get('cores', [])
+              | map('extract', hostvars, 'ansible_host')
+              | map('regex_replace', '^(.*?)(?::[0-9]+)?$', '\\1:4000')
+              | list)
+              +
+              (groups.get('workers', [])
+              | map('extract', hostvars, 'ansible_host')
+              | map('regex_replace', '^(.*?)(?::[0-9]+)?$', '\\1:4021')
+              | list)
+              }}"
 
-- name: Ensure prometheus user exists
-  user:
-    name: "{{ prometheus_user }}"
-    group: "{{ prometheus_group }}"
-    create_home: no
-    system: true
-  become: true
-
-- name: Create Prometheus directories
-  file:
+- name: Create necessary directories
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_group }}"
     mode: "0755"
   loop:
-    - "{{ prometheus_install_dir }}"
+    - "{{ prometheus_dir }}"
     - "{{ prometheus_data_dir }}"
-    - "{{ prometheus_config_dir }}"
-  become: true
 
-- name: Download Prometheus tarball
-  get_url:
-    url: "{{ prometheus_download_url }}"
-    dest: "/tmp/prometheus.tar.gz"
-    mode: "0644"
-  become: true
+- name: Download and extract Prometheus
+  ansible.builtin.unarchive:
+    src: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+    dest: "/tmp"
+    remote_src: yes
 
-- name: Extract Prometheus tarball
-  unarchive:
-    src: "/tmp/prometheus.tar.gz"
-    dest: "/tmp/"
-    remote_src: true
-    creates: "/tmp/{{ prometheus_extracted_dir }}"
-  become: true
+- name: Move Prometheus binary
+  ansible.builtin.shell: "mv /tmp/prometheus-{{ prometheus_version }}.linux-amd64/prometheus {{ prometheus_bin_dir }}/"
+  args:
+    creates: "{{ prometheus_bin_dir }}/prometheus"
 
-- name: Copy Prometheus binaries
-  copy:
-    src: "/tmp/{{ prometheus_extracted_dir }}/{{ item }}"
-    dest: "{{ prometheus_install_dir }}/{{ item }}"
-    owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_group }}"
+- name: Set permissions on Prometheus binary
+  ansible.builtin.file:
+    path: "{{ prometheus_bin_dir }}/prometheus"
     mode: "0755"
-  loop:
-    - prometheus
-    - promtool
-  become: true
 
-- name: Copy consoles and console libraries
-  copy:
-    src: "/tmp/{{ prometheus_extracted_dir }}/{{ item }}"
-    dest: "{{ prometheus_install_dir }}/{{ item }}"
-    owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_group }}"
-    mode: "0755"
-  loop:
-    - consoles
-    - console_libraries
-  become: true
-
-- name: Deploy Prometheus configuration file
-  template:
-    src: prometheus.yml.j2
-    dest: "{{ prometheus_config_dir }}/prometheus.yml"
-    owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_group }}"
+- name: Generate Prometheus configuration file
+  ansible.builtin.copy:
+    dest: "{{ prometheus_config }}"
+    content: |
+      global:
+        scrape_interval: 5s
+        evaluation_interval: 5s
+        external_labels:
+          monitor: "funless"
+      scrape_configs:
+        - job_name: "prometheus"
+          static_configs:
+            - targets: ["localhost:9090"]
+        - job_name: "funless"
+          static_configs:
+            - targets: {{ prometheus_targets[1].static_configs[0].targets | to_json }}
     mode: "0644"
-  become: true
+  notify: Restart Prometheus
 
-- name: Deploy Prometheus systemd service file
-  template:
-    src: prometheus.service.j2
+- name: Create systemd service file for Prometheus
+  ansible.builtin.copy:
     dest: /etc/systemd/system/prometheus.service
-    owner: root
-    group: root
-    mode: "0644"
-  become: true
+    content: |
+      [Unit]
+      Description=Prometheus
+      Wants=network-online.target
+      After=network-online.target
 
-- name: Reload systemd daemon
-  systemd:
-    daemon_reload: true
-  become: true
+      [Service]
+      User=root
+      Group=root
+      Type=simple
+      ExecStart={{ prometheus_bin_dir }}/prometheus --config.file={{ prometheus_config }} --storage.tsdb.path={{ prometheus_data_dir }} --web.listen-address=0.0.0.0:9090
 
-- name: Enable and start Prometheus service
-  systemd:
+      [Install]
+      WantedBy=multi-user.target
+  notify: Restart Prometheus
+
+- name: Reload systemd and enable Prometheus service
+  ansible.builtin.systemd:
+    daemon_reload: yes
     name: prometheus
-    enabled: true
+    enabled: yes
     state: started
-  become: true

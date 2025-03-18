@@ -1,0 +1,47 @@
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - python3
+      - python3-pip
+      - python3-venv
+    state: present
+  become: true
+
+- name: Create a virtual environment for Locust
+  ansible.builtin.command:
+    cmd: python3 -m venv /opt/locust/venv
+    creates: /opt/locust/venv
+
+- name: Upgrade pip in the virtual environment
+  ansible.builtin.command:
+    cmd: /opt/locust/venv/bin/pip install --upgrade pip
+
+- name: Install Locust in the virtual environment
+  ansible.builtin.command:
+    cmd: /opt/locust/venv/bin/pip install locust
+    creates: /opt/locust/venv/bin/locust
+
+- name: Create Locust directory
+  ansible.builtin.file:
+    path: /opt/locust
+    state: directory
+    mode: "0755"
+
+- name: Deploy Locust script
+  ansible.builtin.template:
+    src: locustfile.py.j2
+    dest: /opt/locust/locustfile.py
+    mode: "0644"
+
+- name: Deploy Locust service
+  ansible.builtin.copy:
+    src: locust.service
+    dest: /etc/systemd/system/locust.service
+    mode: "0644"
+
+- name: Start and enable Locust
+  ansible.builtin.systemd:
+    name: locust
+    state: started
+    enabled: yes
+    daemon_reload: yes
