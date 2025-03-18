@@ -1,47 +1,47 @@
 ---
-# - name: Common setup
-#   hosts: all
-#   gather_facts: true
-#   become: true
-#   tasks:
-#     - name: Update apt cache and install dependencies
-#       apt:
-#         name:
-#           - git
-#           - build-essential
-#           - unzip
-#         state: present
-#         update_cache: yes
+- name: Common setup
+  hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Update apt cache and install dependencies
+      apt:
+        name:
+          - git
+          - build-essential
+          - unzip
+        state: present
+        update_cache: yes
 
-# - name: Install Elixir
-#   hosts: all
-#   gather_facts: true
-#   roles:
-#     - role: elixir
+- name: Install Elixir
+  hosts: all
+  gather_facts: true
+  roles:
+    - role: elixir
 
-# - name: Install Postgres
-#   hosts: cores
-#   gather_facts: true
-#   roles:
-#     - role: postgres/setup
+- name: Install Postgres
+  hosts: cores
+  gather_facts: true
+  roles:
+    - role: postgres/setup
 
-# - name: Setup funless repo
-#   hosts: all
-#   gather_facts: true
-#   roles:
-#     - role: funless-bare-metal/setup
+- name: Setup funless repo
+  hosts: all
+  gather_facts: true
+  roles:
+    - role: funless-bare-metal/setup
 
-# - name: Setup cores
-#   hosts: cores
-#   gather_facts: true
-#   roles:
-#     - role: funless-bare-metal/cores
+- name: Setup cores
+  hosts: cores
+  gather_facts: true
+  roles:
+    - role: funless-bare-metal/cores
 
-# - name: Replicate postgres
-#   hosts: cores
-#   gather_facts: true
-#   roles:
-#     - role: postgres/replicate
+- name: Replicate postgres
+  hosts: cores
+  gather_facts: true
+  roles:
+    - role: postgres/replicate
 
 - name: Install Prometheus
   become: true

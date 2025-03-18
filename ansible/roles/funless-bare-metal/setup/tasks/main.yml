@@ -6,5 +6,10 @@
 
 - name: Clone Funless repository
   ansible.builtin.git:
-    repo: https://github.com/funlessdev/funless.git
+    repo: https://github.com/giusdp/funless.git
     dest: "{{ ansible_env.HOME }}/funless"
+
+- name: Switch to jb-tests branch
+  ansible.builtin.shell: "git checkout jb-tests"
+  args:
+    chdir: "{{ ansible_env.HOME }}/funless"
