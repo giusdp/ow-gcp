@@ -20,5 +20,15 @@
     content: |
       #!/bin/bash
       export MIX_ENV=prod
-      iex --name {% if inventory_hostname == 'eu_worker' %}euworker@{% else %}usworker@{% endif %}{{ ansible_default_ipv4.address }} --cookie mycookie -S mix
+      export RELEASE_NODE={% if inventory_hostname == 'eu_worker' %}euworker@{% else %}usworker@{% endif %}{{ ansible_default_ipv4.address }}
+      # iex --name {% if inventory_hostname == 'eu_worker' %}euworker@{% else %}usworker@{% endif %}{{ ansible_default_ipv4.address }} --cookie mycookie -S mix
+      ./_build/prod/rel/worker/bin/worker start_iex
     mode: "0755"
+
+- name: Mix release
+  shell: "mix release"
+  args:
+    chdir: "{{ ansible_env.HOME }}/funless/worker"
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.elixir-install/installs/elixir/1.18.3-otp-27/bin:{{ ansible_env.HOME }}/.elixir-install/installs/otp/27.1.2/bin:{{ ansible_env.PATH }}"
+    MIX_ENV: "prod"
