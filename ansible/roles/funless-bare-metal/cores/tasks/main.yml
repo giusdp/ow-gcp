@@ -62,3 +62,31 @@
   environment:
     PATH: "{{ ansible_env.HOME }}/.elixir-install/installs/elixir/1.18.3-otp-27/bin:{{ ansible_env.HOME }}/.elixir-install/installs/otp/27.1.2/bin:{{ ansible_env.PATH }}"
     MIX_ENV: "prod"
+
+- name: Create app.yaml file
+  copy:
+    dest: "{{ ansible_env.HOME }}/app.yaml"
+    content: |
+      - default:
+        - workers: "*"
+
+      - eu:
+        - workers:
+          - "worker@{{ hostvars['eu_worker']['ansible_default_ipv4']['address'] }}"
+        followup: default
+
+      - us:
+        - workers:
+          - "worker@{{ hostvars['us_worker']['ansible_default_ipv4']['address'] }}"
+        followup: default
+    mode: "0644"
+
+- name: Create app upload script
+  copy:
+    dest: "{{ ansible_env.HOME }}/up_app.sh"
+    content: |
+      #!/bin/bash
+      curl -X POST "localhost:4000/v1/scripts/app" \
+        -F "name=testapp" \
+        -F "file=@app.yaml"
+    mode: "0755"

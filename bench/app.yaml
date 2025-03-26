@@ -1,0 +1,7 @@
+- eu:
+  workers:
+    - euworker
+
+- us:
+  workers:
+    - usworker

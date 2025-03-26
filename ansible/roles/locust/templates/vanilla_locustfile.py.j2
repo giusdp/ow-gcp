@@ -39,15 +39,7 @@ class HelloUser(HttpUser):
             logger.debug("Dispatching request #%d", current_request)
         
         # Make the POST request
-        headers = {"Content-Type": "application/json"}
-        data = {
-            "args": {},
-            "scheduling": {
-            "language": "app",
-            "script": "testapp"
-            }
-        }
-        response = self.client.post("/v1/fn/_/hello", json=data, headers=headers)
+        response = self.client.post("/v1/fn/_/hello")
         
         # Calculate response time in milliseconds
         response_time_ms = response.elapsed.total_seconds() * 1000
